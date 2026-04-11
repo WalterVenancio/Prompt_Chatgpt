@@ -1,0 +1,537 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --aac-bg: #f3f6f9;
+  --aac-bg-soft: #fafcff;
+  --aac-surface: rgba(255, 255, 255, 0.84);
+  --aac-surface-strong: rgba(255, 255, 255, 0.95);
+  --aac-surface-dark: linear-gradient(180deg, #1a2431 0%, #131a24 100%);
+  --aac-border: rgba(66, 88, 110, 0.14);
+  --aac-border-strong: rgba(66, 88, 110, 0.22);
+  --aac-text: #1f252c;
+  --aac-text-soft: #64748a;
+  --aac-title: #14202b;
+  --aac-accent: #3c78b4;
+  --aac-accent-strong: #295f96;
+  --aac-accent-soft: rgba(60, 120, 180, 0.12);
+  --aac-success: #2f7a57;
+  --aac-blue: #325d88;
+  --aac-shadow: 0 20px 60px rgba(32, 28, 22, 0.12);
+  --aac-shadow-soft: 0 12px 32px rgba(32, 28, 22, 0.08);
+  --aac-radius: 18px;
+  --aac-radius-lg: 28px;
+  --aac-gap: 20px;
+  --aac-sticky-header: 88px;
+  --aac-sticky-tabs: 144px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Manrope', system-ui, sans-serif !important;
+  color: var(--aac-text) !important;
+  background:
+    radial-gradient(circle at top left, rgba(60, 120, 180, 0.12), transparent 24%),
+    radial-gradient(circle at top right, rgba(119, 148, 179, 0.10), transparent 26%),
+    linear-gradient(180deg, #f8fbfe 0%, #f1f5f9 100%) !important;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.28) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.28) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.4), transparent 80%);
+  opacity: 0.38;
+}
+
+.header,
+header,
+.topbar,
+.tipobar {
+  backdrop-filter: blur(18px);
+}
+
+.header,
+header {
+  position: sticky !important;
+  top: 0;
+  z-index: 60;
+  min-height: 72px !important;
+  height: auto !important;
+  padding: 16px 26px !important;
+  background: rgba(16, 22, 31, 0.9) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 16px 40px rgba(8, 12, 18, 0.22);
+}
+
+.header-left .company,
+.brand-info span,
+.hccnpj,
+.htitle h2 {
+  letter-spacing: 0.16em !important;
+  color: rgba(236, 228, 217, 0.72) !important;
+}
+
+.header-left .title,
+.brand-info strong,
+.hcname {
+  font-size: clamp(1rem, 1.2vw, 1.25rem) !important;
+  font-weight: 800 !important;
+  color: #fff !important;
+}
+
+.header-right,
+header nav,
+.topbar {
+  flex-wrap: wrap;
+  gap: 10px !important;
+}
+
+.hbtn,
+header nav button,
+.bgerar,
+.bdocx,
+.bpdf,
+.blimpar,
+.bcopy,
+.copy-btn,
+.preview-copy-btn,
+.small-btn,
+.badd,
+.tbtn {
+  border-radius: 14px !important;
+  min-height: 40px;
+  padding: 0 16px !important;
+  font-family: 'Manrope', system-ui, sans-serif !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.02em !important;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease, color 0.18s ease !important;
+}
+
+.hbtn:hover,
+header nav button:hover,
+.bgerar:hover,
+.bdocx:hover,
+.bpdf:hover,
+.blimpar:hover,
+.bcopy:hover,
+.copy-btn:hover,
+.preview-copy-btn:hover,
+.small-btn:hover,
+.badd:hover,
+.tbtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(12, 18, 28, 0.12);
+}
+
+.hbtn-white,
+.btn-primary,
+.bgerar,
+.copy-btn,
+.preview-copy-btn {
+  background: linear-gradient(135deg, #d9e7f5 0%, #bed5ee 100%) !important;
+  border-color: rgba(190, 213, 238, 0.9) !important;
+  color: #17314d !important;
+}
+
+.hbtn-outline,
+.btn-ghost,
+.bcopy,
+.blimpar,
+.small-btn,
+.badd {
+  background: rgba(255, 255, 255, 0.78) !important;
+  border: 1px solid var(--aac-border) !important;
+  color: var(--aac-title) !important;
+}
+
+.hbtn-danger,
+.btn-danger {
+  background: rgba(192, 57, 43, 0.08) !important;
+  border-color: rgba(192, 57, 43, 0.24) !important;
+  color: #d06149 !important;
+}
+
+.body-split,
+.layout,
+.mainwrap {
+  gap: 0 !important;
+}
+
+.left-panel,
+.form-panel,
+.fpanel,
+.opanel,
+.right-panel,
+.preview-panel,
+.fscroll {
+  min-width: 0;
+}
+
+.left-panel,
+.form-panel,
+.fpanel,
+.opanel {
+  background: transparent !important;
+}
+
+.left-panel,
+.form-panel,
+.fpanel {
+  padding: 28px !important;
+}
+
+.left-panel > *,
+.form-panel > *,
+.fpanel > *,
+.opanel > .docprev,
+.step-block,
+.section-block,
+.atividades-wrap,
+.upload-zone,
+.finbox,
+.docprev,
+.field,
+.fg,
+.form-row,
+.form-row.full {
+  position: relative;
+}
+
+.step-block,
+.section-block,
+.fg,
+.field,
+.atividades-wrap,
+.upload-zone,
+.finbox,
+.docprev {
+  background: var(--aac-surface);
+  border: 1px solid var(--aac-border);
+  box-shadow: var(--aac-shadow-soft);
+  border-radius: var(--aac-radius);
+  backdrop-filter: blur(16px);
+}
+
+.step-block,
+.section-block,
+.atividades-wrap,
+.upload-zone,
+.finbox {
+  padding: 18px;
+}
+
+.field {
+  padding: 14px;
+}
+
+.field-row,
+.form-row,
+.fg {
+  gap: 14px !important;
+}
+
+.stitle,
+.step-header,
+.section-label,
+.ohdr,
+.preview-header {
+  margin-bottom: 14px !important;
+}
+
+.step-header h2,
+.section-label,
+.stitle h3,
+.ohdr h3,
+.preview-header span,
+.atividades-topbar span,
+.field label,
+.form-group label {
+  color: var(--aac-text-soft) !important;
+  letter-spacing: 0.12em !important;
+}
+
+.section-label,
+.stitle,
+.step-header {
+  padding-bottom: 4px;
+}
+
+.step-num,
+.section-label .num,
+.snum {
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 12px !important;
+  background: linear-gradient(135deg, var(--aac-accent) 0%, #78a6d5 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 10px 18px rgba(60, 120, 180, 0.24);
+}
+
+input[type=text],
+input[type=number],
+input[type=date],
+textarea,
+select,
+.dyni input,
+.field input,
+.field textarea,
+.field select {
+  width: 100%;
+  min-height: 46px;
+  border-radius: 14px !important;
+  border: 1px solid rgba(71, 61, 49, 0.14) !important;
+  background: rgba(255, 255, 255, 0.86) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  color: var(--aac-title) !important;
+  font-family: 'Manrope', system-ui, sans-serif !important;
+}
+
+textarea,
+.field textarea {
+  min-height: 108px;
+  line-height: 1.65 !important;
+}
+
+input[type=text]:focus,
+input[type=number]:focus,
+input[type=date]:focus,
+textarea:focus,
+select:focus,
+.dyni input:focus,
+.field input:focus,
+.field textarea:focus,
+.field select:focus {
+  border-color: rgba(210, 100, 63, 0.42) !important;
+  box-shadow: 0 0 0 4px rgba(210, 100, 63, 0.12) !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #9d9387 !important;
+}
+
+.tag,
+.chip,
+.impl-tag,
+.sbtn,
+.pgto-row,
+.radio-label,
+.tbtn {
+  border-radius: 999px !important;
+  border: 1px solid rgba(73, 61, 46, 0.12) !important;
+  background: rgba(255, 255, 255, 0.78) !important;
+  color: var(--aac-title) !important;
+}
+
+.tag.on,
+.chip.on,
+.impl-tag.on,
+.sbtn.sel,
+.pgto-row.active,
+.tbtn.active {
+  background: linear-gradient(135deg, rgba(60, 120, 180, 0.14) 0%, rgba(50, 93, 136, 0.10) 100%) !important;
+  border-color: rgba(60, 120, 180, 0.34) !important;
+  color: #244f7a !important;
+  box-shadow: 0 10px 20px rgba(60, 120, 180, 0.12);
+}
+
+.right-panel,
+.preview-panel {
+  background: transparent !important;
+  padding: 24px !important;
+}
+
+.preview-panel {
+  position: sticky !important;
+  top: 96px !important;
+  height: calc(100vh - 112px) !important;
+}
+
+.preview-header,
+.topbar,
+.tipobar,
+.ohdr {
+  padding: 14px 18px !important;
+  background: var(--aac-surface-strong) !important;
+  border: 1px solid var(--aac-border) !important;
+  border-radius: 18px !important;
+  box-shadow: var(--aac-shadow-soft);
+}
+
+.topbar,
+.tipobar {
+  position: sticky;
+  z-index: 40;
+  margin: 0 24px 16px;
+}
+
+.tipobar {
+  top: var(--aac-sticky-header);
+  margin-bottom: 12px;
+}
+
+.topbar {
+  top: var(--aac-sticky-tabs);
+}
+
+.preview-content,
+#prompt-preview,
+.docprev {
+  background: var(--aac-surface-dark) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 24px 60px rgba(7, 12, 18, 0.28);
+}
+
+.preview-content,
+#prompt-preview {
+  font-family: 'IBM Plex Mono', 'Cascadia Code', monospace !important;
+  font-size: 12.5px !important;
+  color: #d8e1ec !important;
+  padding: 24px !important;
+}
+
+.docprev {
+  background: rgba(255, 255, 255, 0.92) !important;
+  color: #17212c !important;
+}
+
+.docinner {
+  padding: 36px !important;
+}
+
+.dh1,
+.dh2 {
+  color: var(--aac-blue) !important;
+}
+
+.divider,
+.sdiv {
+  background: linear-gradient(90deg, rgba(210, 100, 63, 0.18), rgba(50, 93, 136, 0.12)) !important;
+}
+
+.toast,
+#toast {
+  border-radius: 14px !important;
+  background: rgba(20, 29, 40, 0.94) !important;
+  box-shadow: 0 18px 40px rgba(6, 10, 16, 0.28);
+}
+
+.aac-active-block {
+  border-color: rgba(60, 120, 180, 0.28) !important;
+  box-shadow: 0 16px 36px rgba(60, 120, 180, 0.12) !important;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(100, 90, 77, 0.28);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@media (max-width: 1100px) {
+  .body-split,
+  .layout,
+  .mainwrap {
+    grid-template-columns: 1fr !important;
+  }
+
+  .preview-panel,
+  .right-panel {
+    position: relative !important;
+    top: 0 !important;
+    height: auto !important;
+    padding-top: 0 !important;
+  }
+
+  .left-panel,
+  .form-panel,
+  .fpanel,
+  .right-panel,
+  .preview-panel,
+  .opanel {
+    padding: 20px !important;
+  }
+
+  .topbar,
+  .tipobar {
+    margin: 0 20px 12px;
+  }
+
+  .tipobar {
+    top: 82px;
+  }
+
+  .topbar {
+    top: 138px;
+  }
+}
+
+@media (max-width: 720px) {
+  .header,
+  header {
+    padding: 14px 16px !important;
+  }
+
+  .field-row,
+  .form-row,
+  .fg.c2,
+  .fg.c3 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .brand,
+  .header-right,
+  header nav {
+    width: 100%;
+  }
+
+  .topbar,
+  .tipobar {
+    margin: 0 16px 12px;
+    padding: 12px !important;
+  }
+
+  .tipobar {
+    top: 78px;
+  }
+
+  .topbar {
+    top: 134px;
+  }
+
+  .left-panel,
+  .form-panel,
+  .fpanel,
+  .right-panel,
+  .preview-panel,
+  .opanel {
+    padding: 16px !important;
+  }
+
+  .step-block,
+  .section-block,
+  .field,
+  .atividades-wrap,
+  .upload-zone,
+  .finbox {
+    padding: 14px;
+  }
+}

@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerador de Descrições — Planilha Orçamentária</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --dark: #111111;
+  --dark2: #1a1a1a;
+  --dark3: #222222;
+  --dark-border: #2e2e2e;
+  --accent: #00c896;
+  --accent-dim: rgba(0,200,150,0.12);
+  --light-bg: #f5f4f0;
+  --surface: #ffffff;
+  --border: #e0ddd8;
+  --border2: #c8c4bc;
+  --text: #1a1916;
+  --text2: #6b6860;
+  --text3: #9c9890;
+  --blue: #1d4ed8;
+  --blue-light: #eff6ff;
+  --blue-border: #bfdbfe;
+  --purple: #7c3aed;
+  --cyan: #0891b2;
+  --radius: 6px;
+  --radius-lg: 10px;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--light-bg);
+  color: var(--text);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-size: 13px;
+}
+
+/* ─── HEADER ─── */
+.header {
+  background: var(--dark);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 56px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--dark-border);
+}
+.header-left { display: flex; flex-direction: column; gap: 2px; }
+.header-left .company { font-size: 10px; font-weight: 500; color: #888; letter-spacing: 0.08em; text-transform: uppercase; }
+.header-left .title { font-size: 15px; font-weight: 600; color: #fff; }
+.header-right { display: flex; gap: 10px; align-items: center; }
+
+.hbtn {
+  height: 34px;
+  padding: 0 16px;
+  border-radius: var(--radius);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.hbtn-outline { background: transparent; color: #fff; border-color: #444; }
+.hbtn-outline:hover { background: #222; border-color: #666; }
+.hbtn-white { background: #fff; color: #111; border-color: #fff; }
+.hbtn-white:hover { background: #eee; }
+.hbtn-accent { background: var(--accent); color: #000; border-color: var(--accent); }
+.hbtn-accent:hover { background: #00b084; }
+.hbtn-danger { background: transparent; color: #f87171; border-color: #7f1d1d; }
+.hbtn-danger:hover { background: #450a0a; }
+
+/* ─── LAYOUT ─── */
+.body-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ─── PAINEL ESQUERDO ─── */
+.left-panel {
+  background: var(--light-bg);
+  overflow-y: auto;
+  padding: 28px 24px;
+  border-right: 1px solid var(--border);
+}
+
+.step-block { margin-bottom: 28px; }
+.step-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 18px;
+}
+.step-num {
+  width: 22px; height: 22px;
+  background: var(--dark);
+  color: #fff;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.step-header h2 {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text2);
+}
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.form-row.full { grid-template-columns: 1fr; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text2);
+}
+input[type=text], textarea, select {
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 11px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  width: 100%;
+}
+input[type=text]:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--dark);
+  box-shadow: 0 0 0 3px rgba(0,0,0,0.06);
+}
+input::placeholder, textarea::placeholder { color: var(--text3); }
+textarea { resize: vertical; line-height: 1.6; }
+
+.divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+/* Tags disciplinas */
+.tag-grid { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 4px; }
+.tag {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border2);
+  background: var(--surface);
+  color: var(--text2);
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.12s;
+  text-transform: uppercase;
+}
+.tag.on { background: var(--dark); color: #fff; border-color: var(--dark); }
+
+/* Implícitos */
+.impl-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.impl-tag {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text2);
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.12s;
+}
+.impl-tag.on { background: var(--blue-light); color: var(--blue); border-color: var(--blue-border); }
+
+/* Atividades textarea */
+.atividades-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.atividades-topbar {
+  background: #f8f7f4;
+  border-bottom: 1px solid var(--border);
+  padding: 8px 12px;
+  display: flex; align-items: center; gap: 6px;
+}
+.atividades-topbar span { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; flex: 1; }
+.small-btn {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border2);
+  background: var(--surface);
+  color: var(--text2);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.12s;
+}
+.small-btn:hover { background: var(--light-bg); color: var(--text); }
+
+.atividades-wrap textarea {
+  border: none;
+  border-radius: 0;
+  font-family: 'Consolas', 'Cascadia Code', 'Monaco', monospace;
+  font-size: 12.5px;
+  min-height: 200px;
+  padding: 14px;
+  background: #fdfdfc;
+  color: var(--text);
+  line-height: 1.7;
+}
+.atividades-wrap textarea:focus { box-shadow: none; border-color: transparent; }
+
+/* Estrutura preview */
+.estrutura-preview {
+  background: #fdfdfc;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  font-family: 'Consolas', monospace;
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--text2);
+  min-height: 60px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+/* ─── PAINEL DIREITO ─── */
+.right-panel {
+  background: var(--dark);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.preview-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--dark-border);
+  flex-shrink: 0;
+}
+.preview-header span {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #555;
+}
+.preview-copy-btn {
+  height: 30px;
+  padding: 0 14px;
+  background: var(--accent);
+  color: #000;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.preview-copy-btn:hover { background: #00b084; }
+
+.preview-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 22px;
+  font-family: 'Consolas', 'Cascadia Code', 'Monaco', monospace;
+  font-size: 12px;
+  line-height: 1.8;
+  color: #ccc;
+  white-space: pre-wrap;
+}
+.preview-content .ph { color: #444; font-style: italic; }
+.preview-content .hl-section { color: #fff; font-weight: 700; }
+.preview-content .hl-key { color: var(--accent); }
+.preview-content .hl-item { color: #aaa; }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 20px; right: 20px;
+  background: #000; color: #fff;
+  padding: 10px 16px; border-radius: var(--radius);
+  font-size: 12px; font-weight: 500;
+  opacity: 0; transform: translateY(6px);
+  transition: all 0.18s; pointer-events: none; z-index: 999;
+  border: 1px solid var(--dark-border);
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+
+.example-hint {
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 6px;
+  line-height: 1.5;
+}
+</style>
+<link rel="stylesheet" href="aac-modern-theme.css">
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-left">
+    <span class="company">Venancio Engenharia</span>
+    <span class="title">Gerador de Descrições — Planilha Orçamentária</span>
+  </div>
+  <div class="header-right">
+    <button class="hbtn hbtn-white" onclick="copiarPrompt()">COPIAR PROMPT</button>
+    <button class="hbtn hbtn-danger" onclick="limparTudo()">LIMPAR</button>
+  </div>
+</header>
+
+<!-- BODY SPLIT -->
+<div class="body-split">
+
+  <!-- ESQUERDO -->
+  <div class="left-panel">
+
+    <!-- BLOCO 1: CONFIGURAÇÃO -->
+    <div class="step-block">
+      <div class="step-header">
+        <div class="step-num">1</div>
+        <h2>Configuração do Prompt</h2>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tipo de Obra</label>
+          <select id="tipo">
+            <option value="industrial">Industrial / Manutenção</option>
+            <option value="predial">Predial / Reforma</option>
+            <option value="infraestrutura">Infraestrutura / Fundação</option>
+            <option value="montagem">Montagem Metálica / Andaimes</option>
+            <option value="farmaceutico">Industrial Farmacêutico</option>
+            <option value="outro">Outro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Nível de Detalhe</label>
+          <select id="detalhe">
+            <option value="1">Conciso — 1 linha por item</option>
+            <option value="2">Padrão — até 2 linhas por item</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom:14px;">
+        <label>Contexto da Obra (opcional)</label>
+        <textarea id="contexto" rows="2" placeholder="Ex: Planta industrial em operação, restrição de acesso, serviço noturno, BPF..."></textarea>
+      </div>
+
+      <div class="form-group" style="margin-bottom:14px;">
+        <label>Considerar Implicitamente</label>
+        <div class="impl-grid">
+          <span class="impl-tag on" data-v="mao_de_obra">Mão de obra</span>
+          <span class="impl-tag on" data-v="equipamentos">Equipamentos</span>
+          <span class="impl-tag on" data-v="ferramentas">Ferramentas</span>
+          <span class="impl-tag on" data-v="materiais">Materiais</span>
+          <span class="impl-tag on" data-v="sequencia">Sequência construtiva</span>
+          <span class="impl-tag" data-v="nbr">Normas NBR</span>
+          <span class="impl-tag" data-v="seguranca">Segurança do trabalho</span>
+          <span class="impl-tag" data-v="medicao">Critério de medição</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- BLOCO 2: ATIVIDADES -->
+    <div class="step-block">
+      <div class="step-header">
+        <div class="step-num">2</div>
+        <h2>Atividades da Planilha</h2>
+      </div>
+
+      <p class="example-hint" style="margin-bottom:10px;">
+        Insira os itens já com a hierarquia que desejar. Use numeração simples ou recuo. O sistema organiza e monta o prompt para adequação técnica das descrições.
+      </p>
+
+      <div class="atividades-wrap">
+        <div class="atividades-topbar">
+          <span>Lista de atividades</span>
+          <button class="small-btn" onclick="inserirExemplo()">Inserir exemplo</button>
+          <button class="small-btn" onclick="document.getElementById('atividades').value=''">Limpar campo</button>
+        </div>
+        <textarea id="atividades" rows="12"
+          placeholder="Cole ou digite sua estrutura aqui. Exemplos:
+
+1 Serviços Preliminares
+1.1 Instalação de canteiro
+1.1.1 Tapume
+1.1.2 Ligações provisórias
+1.2 Demolição
+2 Estrutura
+2.1 Fundações
+2.1.1 Escavação manual
+2.1.2 Lastro de concreto magro
+2.2 Concretagem pilares"></textarea>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="form-group">
+        <label>Pré-visualização da estrutura reconhecida</label>
+        <div class="estrutura-preview" id="struct-preview">
+          <span style="color:var(--text3);font-style:italic;">Preencha o campo acima para visualizar...</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /left-panel -->
+
+  <!-- DIREITO: PREVIEW -->
+  <div class="right-panel">
+    <div class="preview-header">
+      <span>Preview do Prompt</span>
+      <button class="preview-copy-btn" onclick="copiarPrompt()">COPIAR</button>
+    </div>
+    <div class="preview-content" id="preview">
+<span class="ph">Cole as atividades ao lado para gerar o prompt...</span>
+    </div>
+  </div>
+
+</div><!-- /body-split -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── TAGS ──────────────────────────────────────────────────────
+
+const implMap = {
+  mao_de_obra: 'mão de obra necessária',
+  equipamentos: 'equipamentos utilizados',
+  ferramentas: 'ferramentas de apoio',
+  materiais: 'materiais empregados',
+  sequencia: 'sequência preparo → execução → acabamento',
+  nbr: 'referências normativas (NBR)',
+  seguranca: 'segurança do trabalho',
+  medicao: 'critério de medição'
+};
+
+function getImplicitos() {
+  return [...document.querySelectorAll('.impl-tag.on')].map(t => implMap[t.dataset.v]).filter(Boolean);
+}
+
+// ── PARSE ATIVIDADES ──────────────────────────────────────────
+function parseAtividades(raw) {
+  const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  const items = [];
+  for (const line of lines) {
+    const m = line.match(/^(\d+(?:\.\d+)*)[\s.)\-:]+(.+)$/);
+    if (m) {
+      const code = m[1];
+      const text = m[2].trim();
+      const level = code.split('.').length;
+      items.push({ code, text, level });
+    } else {
+      // linha sem número — trata como descrição livre
+      items.push({ code: '', text: line, level: 0 });
+    }
+  }
+  return items;
+}
+
+// ── PREVIEW ESTRUTURA ──────────────────────────────────────────
+const ativEl = document.getElementById('atividades');
+ativEl.addEventListener('input', () => {
+  renderStructPreview(parseAtividades(ativEl.value));
+  gerarPrompt();
+});
+
+// Atualização em tempo real para todos os outros campos
+['tipo','detalhe','contexto'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', gerarPrompt);
+});
+document.getElementById('tipo').addEventListener('change', gerarPrompt);
+document.getElementById('detalhe').addEventListener('change', gerarPrompt);
+document.querySelectorAll('.impl-tag').forEach(t => {
+  t.addEventListener('click', () => { t.classList.toggle('on'); gerarPrompt(); });
+});
+
+function renderStructPreview(items) {
+  const el = document.getElementById('struct-preview');
+  if (!items.length) {
+    el.innerHTML = '<span style="color:var(--text3);font-style:italic;">Preencha o campo acima para visualizar...</span>';
+    return;
+  }
+  const colors = ['#1d4ed8', '#7c3aed', '#0891b2', '#888'];
+  el.innerHTML = items.map(n => {
+    const indent = '&nbsp;'.repeat((Math.max(n.level - 1, 0)) * 4);
+    const color = colors[Math.min(n.level - 1, 3)] || '#888';
+    const codeSpan = n.code
+      ? `<span style="font-weight:700;color:${color};">${n.code}</span> `
+      : '<span style="color:#ccc;">—</span> ';
+    return `<div>${indent}${codeSpan}${escHtml(n.text)}</div>`;
+  }).join('');
+}
+
+// ── GERAR PROMPT ──────────────────────────────────────────────
+function gerarPrompt() {
+  const tipo      = document.getElementById('tipo');
+  const tipoLabel = tipo.options[tipo.selectedIndex].text.toLowerCase();
+  const detalhe   = document.getElementById('detalhe').value;
+  const contexto  = v('contexto');
+  const raw       = v('atividades');
+  const implicitos = getImplicitos();
+  const linhas    = detalhe === '1' ? 'máximo 1 linha por item' : 'máximo 2 linhas por item, preferência por 1';
+
+  if (!raw) {
+    showToast('Preencha o campo de atividades');
+    return;
+  }
+
+  const items = parseAtividades(raw);
+
+  let p = '';
+
+  // PAPEL
+  p += `# PAPEL E CONTEXTO\n\n`;
+  p += `Você é engenheiro civil sênior especializado em orçamentos de obras ${tipoLabel}.\n`;
+  p += `Sua função é revisar e padronizar tecnicamente as descrições de uma planilha orçamentária.\n`;
+
+  p += `\n---\n\n`;
+
+  // OBJETIVO
+  p += `## OBJETIVO\n\n`;
+  p += `Revisar e padronizar tecnicamente as descrições da planilha orçamentária abaixo.\n`;
+  p += `A saída será usada diretamente na planilha para orçamento e contratação.\n`;
+
+  p += `\n---\n\n`;
+
+  // REGRAS
+  p += `## REGRAS\n\n`;
+  p += `- ${linhas}\n`;
+  p += `- Descrever como o serviço será executado — foco no método executivo\n`;
+  if (implicitos.length) p += `- Considerar implicitamente: ${implicitos.join(', ')}\n`;
+  p += `- Manter coerência construtiva: preparo → execução → acabamento\n`;
+  p += `- Evitar termos genéricos ("realizar", "executar serviços de", "efetuar", "fazer")\n`;
+  p += `- Usar linguagem técnica de engenharia civil e normas brasileiras quando aplicável\n`;
+  p += `- Respeitar exatamente a hierarquia e numeração fornecidas\n`;
+  p += `- Para etapas e subetapas (agrupadores): manter o nome tal como fornecido\n`;
+  p += `- Para itens de detalhe (último nível): retornar descrição técnica padronizada\n`;
+  p += `- Saída em lista simples, sem cabeçalhos adicionais, na mesma ordem e estrutura\n`;
+
+  if (contexto) {
+    p += `\n---\n\n## CONTEXTO DA OBRA\n\n${contexto}\n`;
+  }
+
+  p += `\n---\n\n`;
+
+  // ATIVIDADES
+  p += `## ATIVIDADES PARA ADEQUAÇÃO\n\n`;
+  items.forEach(n => {
+    if (n.code) {
+      const indent = '  '.repeat(Math.max(n.level - 1, 0));
+      const isLeaf = !items.some(other => other.code && other.code.startsWith(n.code + '.'));
+      p += `${indent}${n.text}${isLeaf ? ' → [adequar descrição técnica]' : ''}\n`;
+    } else {
+      p += `${n.text}\n`;
+    }
+  });
+
+  p += `\n---\n\n`;
+  p += `## FORMATO DE SAÍDA\n\n`;
+  p += `Retorne a mesma estrutura numerada, com as descrições dos itens de detalhe padronizadas.\n`;
+  p += `Não adicione itens, não remova itens, não altere a numeração.\n`;
+
+  renderPreview(p);
+}
+
+function renderPreview(text) {
+  const el = document.getElementById('preview');
+  // Highlight simples
+  const html = escHtml(text)
+    .replace(/^(# .+)$/gm, '<span style="color:#fff;font-weight:700;">$1</span>')
+    .replace(/^(## .+)$/gm, '<span style="color:#fff;font-weight:700;">$1</span>')
+    .replace(/^(---)/gm, '<span style="color:#333;">$1</span>')
+    .replace(/→ \[adequar descrição técnica\]/g, '<span style="color:#00c896;">→ [adequar descrição técnica]</span>')
+    .replace(/\*\*(.+?)\*\*/g, '<span style="color:#fff;font-weight:700;">$1</span>');
+  el.innerHTML = html;
+}
+
+// ── COPIAR ────────────────────────────────────────────────────
+function copiarPrompt() {
+  const raw = document.getElementById('preview').innerText;
+  if (!raw || raw.includes('Preencha')) { showToast('Gere o prompt antes de copiar'); return; }
+  // remove tags HTML para copiar texto limpo
+  const tmp = document.createElement('div');
+  tmp.innerHTML = document.getElementById('preview').innerHTML;
+  const txt = tmp.innerText;
+  navigator.clipboard.writeText(txt).then(() => showToast('Prompt copiado!'));
+}
+
+// ── EXPORTAR EXCEL ─────────────────────────────────────────────
+function exportarExcel() {
+  const raw = v('atividades');
+  if (!raw) { showToast('Preencha as atividades antes de exportar'); return; }
+
+  const items = parseAtividades(raw);
+  const rows = [['Etapa', 'Descrição da Atividade', 'Un.', 'Qtd']];
+
+  items.forEach(n => {
+    const etapa = n.code || '';
+    const desc = n.text || '';
+    rows.push([etapa, desc, '', '']);
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{ wch: 12 }, { wch: 65 }, { wch: 8 }, { wch: 10 }];
+
+  // Estilo cabeçalho
+  ['A1','B1','C1','D1'].forEach(addr => {
+    if (!ws[addr]) return;
+    ws[addr].s = {
+      font: { bold: true, sz: 11, color: { rgb: 'FFFFFF' } },
+      fill: { fgColor: { rgb: '111111' } },
+      alignment: { horizontal: 'center', vertical: 'center' }
+    };
+  });
+
+  // Estilo linhas por nível
+  const levelColors = { 1: 'EFF6FF', 2: 'F5F3FF', 3: 'FFFFFF', 0: 'FAFAFA' };
+  items.forEach((n, i) => {
+    const rowNum = i + 2;
+    const col = levelColors[n.level] || 'FFFFFF';
+    const bold = n.level > 0 && n.level < 3;
+    ['A','B','C','D'].forEach(c => {
+      const addr = `${c}${rowNum}`;
+      if (!ws[addr]) ws[addr] = { t: 's', v: '' };
+      ws[addr].s = {
+        font: { bold, sz: 10 },
+        fill: { fgColor: { rgb: col } },
+        alignment: { vertical: 'center', wrapText: true },
+        border: { bottom: { style: 'thin', color: { rgb: 'E5E7EB' } } }
+      };
+    });
+  });
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Orçamento');
+  XLSX.writeFile(wb, 'orcamento.xlsx');
+  showToast('Excel exportado!');
+}
+
+// ── INSERIR EXEMPLO ────────────────────────────────────────────
+function inserirExemplo() {
+  document.getElementById('atividades').value =
+`1 Serviços Preliminares
+1.1 Instalação de canteiro
+1.1.1 Tapume metálico
+1.1.2 Ligações provisórias de água e energia
+1.2 Demolição e retirada de entulho
+1.3 Limpeza da área de trabalho
+2 Estrutura
+2.1 Fundações
+2.1.1 Escavação manual
+2.1.2 Lastro de concreto magro
+2.1.3 Forma e ferragem sapata
+2.1.4 Concretagem sapata
+2.2 Pilares
+2.2.1 Forma e ferragem pilar
+2.2.2 Concretagem pilar
+3 Coberturas e Fechamentos
+3.1 Estrutura metálica de cobertura
+3.2 Telha trapezoidal
+3.3 Calha e rufos
+4 Instalações
+4.1 Elétrica
+4.1.1 Eletroduto e fiação
+4.1.2 Quadro de distribuição
+4.2 Hidráulica
+4.2.1 Tubulação de água fria
+4.2.2 Tubulação de esgoto`;
+  renderStructPreview(parseAtividades(document.getElementById('atividades').value));
+  showToast('Exemplo inserido');
+}
+
+// ── LIMPAR ─────────────────────────────────────────────────────
+function limparTudo() {
+  if (!confirm('Limpar todos os campos?')) return;
+  ['contexto','atividades'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.querySelectorAll('.impl-tag').forEach(t => {
+    t.classList.remove('on');
+    if (['mao_de_obra','equipamentos','ferramentas','materiais','sequencia'].includes(t.dataset.v))
+      t.classList.add('on');
+  });
+  document.getElementById('preview').innerHTML = '<span class="ph">Cole as atividades ao lado para gerar o prompt...</span>';
+  renderStructPreview([]);
+  gerarPrompt();
+  showToast('Campos limpos');
+}
+
+// ── HELPERS ────────────────────────────────────────────────────
+function v(id) { return (document.getElementById(id)?.value || '').trim(); }
+
+function escHtml(s) {
+  return (s || '')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+</script>
+<script src="aac-modern-ui.js"></script>
+</body>
+</html>

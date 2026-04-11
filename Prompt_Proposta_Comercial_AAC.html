@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proposta Técnica — AA Construções & Reformas</title>
+<style>
+  :root {
+    --bg:           #f4f3f0;
+    --surface:      #ffffff;
+    --border:       #d8d5cf;
+    --border-focus: #1a1a1a;
+    --text:         #1a1a1a;
+    --muted:        #7a776f;
+    --tag-bg:       #eae8e3;
+    --danger:       #c0392b;
+    --header-h:     56px;
+    --radius:       4px;
+    --sans:         Arial, sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--text);
+    color: #fff;
+    height: var(--header-h);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 32px;
+    border-bottom: 2px solid #333;
+  }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .brand-logo {
+    height: 40px; width: auto; max-width: 140px;
+    background: #fff;
+    border-radius: 3px;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; flex-shrink: 0;
+    padding: 3px 6px;
+  }
+  .brand-logo img { max-height: 34px; max-width: 130px; width: auto; object-fit: contain; display: none; }
+  .brand-logo .initials { font-size: 11px; font-weight: 700; color: #1a1a1a; letter-spacing: 0; padding: 0 6px; }
+  .brand-info span { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: #aaa; display: block; }
+  .brand-info strong { font-size: 13px; font-weight: 700; color: #fff; }
+  header nav { display: flex; gap: 8px; }
+  header nav button {
+    font-family: var(--sans); font-size: 12px; font-weight: 700;
+    letter-spacing: 0.04em; padding: 7px 16px; border-radius: var(--radius);
+    cursor: pointer; transition: all .15s; border: 1.5px solid transparent;
+  }
+  .btn-ghost  { background: transparent; border-color: #555; color: #ccc; }
+  .btn-ghost:hover  { border-color: #fff; color: #fff; }
+  .btn-primary { background: #fff; border-color: #fff; color: #1a1a1a; }
+  .btn-primary:hover { background: #e0e0e0; }
+  .btn-danger  { background: transparent; border-color: #c0392b; color: #e74c3c; }
+  .btn-danger:hover  { background: #c0392b; color: #fff; }
+
+  /* LAYOUT */
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    min-height: calc(100vh - var(--header-h));
+  }
+
+  /* FORM PANEL */
+  .form-panel {
+    padding: 40px 36px;
+    overflow-y: auto;
+    border-right: 1px solid var(--border);
+  }
+
+  .section-block { margin-bottom: 36px; animation: fadeIn .3s ease both; }
+  @keyframes fadeIn { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform:none; } }
+
+  .section-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--muted);
+    margin-bottom: 16px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-label .num {
+    background: var(--text); color: #fff;
+    font-size: 9px; width: 18px; height: 18px;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: block; font-size: 11px; font-weight: 700;
+    color: var(--muted); margin-bottom: 5px;
+    letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  .field input, .field textarea, .field select {
+    width: 100%; font-family: var(--sans); font-size: 13px;
+    color: var(--text); background: var(--surface);
+    border: 1.5px solid var(--border); border-radius: var(--radius);
+    padding: 9px 12px; outline: none; transition: border-color .15s, box-shadow .15s;
+    resize: vertical;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px rgba(26,26,26,.08);
+  }
+  .field textarea { min-height: 80px; }
+
+  .field-row   { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* upload logo */
+  .upload-zone {
+    border: 2px dashed var(--border); border-radius: var(--radius);
+    padding: 18px; text-align: center; cursor: pointer;
+    transition: all .2s; background: var(--surface); position: relative;
+  }
+  .upload-zone:hover, .upload-zone.dragover { border-color: var(--text); background: var(--tag-bg); }
+  .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .upload-zone .icon { font-size: 20px; margin-bottom: 4px; }
+  .upload-zone p { font-size: 12px; color: var(--muted); }
+  .upload-zone strong { font-size: 12px; color: var(--text); }
+  #logo-preview-zone { max-height: 38px; margin-top: 8px; }
+
+  /* radio */
+  .radio-row { display: flex; gap: 14px; margin-top: 4px; flex-wrap: wrap; }
+  .radio-label { display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; }
+  .radio-label input { accent-color: var(--text); }
+  .radio-row.compact { gap: 8px; margin-top: 6px; }
+  .radio-row.compact .radio-label {
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 7px 10px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface);
+    line-height: 1;
+  }
+  .radio-row.compact .radio-label input {
+    width: 13px;
+    height: 13px;
+    margin: 0;
+  }
+
+  /* select pagamento — compact radio row */
+  .pgto-select { display: flex; flex-direction: column; gap: 5px; }
+  .pgto-row {
+    display: grid; grid-template-columns: 16px 1fr;
+    align-items: center; gap: 8px;
+    padding: 6px 10px; border-radius: var(--radius);
+    border: 1.5px solid var(--border); background: var(--surface);
+    cursor: pointer; transition: border-color .15s;
+  }
+  .pgto-row:hover { border-color: #999; }
+  .pgto-row.active { border-color: var(--text); background: #f8f8f6; }
+  .pgto-row input[type=radio] { accent-color: var(--text); margin: 0; width: 14px; height: 14px; }
+  .pgto-row span { font-size: 13px; color: var(--text); line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pgto-extra { display: none; margin-top: 6px; }
+  .pgto-extra.show { display: block; }
+
+  /* PREVIEW */
+  .preview-panel {
+    display: flex; flex-direction: column;
+    background: #1a1a1a;
+    position: sticky; top: var(--header-h);
+    height: calc(100vh - var(--header-h));
+  }
+  .preview-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px; border-bottom: 1px solid #333; flex-shrink: 0;
+  }
+  .preview-header span { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #888; }
+  .copy-btn {
+    font-family: var(--sans); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 6px 14px; border-radius: var(--radius);
+    background: #2d6a4f; color: #fff; border: none; cursor: pointer; transition: background .15s;
+  }
+  .copy-btn:hover { background: #3a8a64; }
+  .copy-btn.copied { background: #555; }
+
+  #prompt-preview {
+    flex: 1; overflow-y: auto;
+    font-family: 'Courier New', monospace; font-size: 11.5px; line-height: 1.7;
+    color: #c9c5bb; padding: 20px;
+    white-space: pre-wrap; word-break: break-word;
+  }
+  #prompt-preview .section-title { color: #e0bc7a; }
+  #prompt-preview .label { color: #88b4d8; }
+  #prompt-preview .filled { color: #7ec8a0; }
+  #prompt-preview .ph { color: #555; font-style: italic; }
+
+  #toast {
+    position: fixed; bottom: 28px; right: 28px;
+    background: #2d6a4f; color: #fff;
+    font-size: 13px; font-weight: 700;
+    padding: 10px 20px; border-radius: var(--radius);
+    opacity: 0; transform: translateY(8px);
+    transition: all .25s; pointer-events: none; z-index: 999;
+  }
+  #toast.show { opacity: 1; transform: none; }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+  #prompt-preview::-webkit-scrollbar-thumb { background: #444; }
+</style>
+<link rel="stylesheet" href="aac-modern-theme.css">
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-logo" id="header-logo-wrap">
+      <img id="header-logo-img" alt="Logo AA">
+      <span class="initials" id="header-initials">AA</span>
+    </div>
+    <div class="brand-info">
+      <span>AA Construções &amp; Reformas LTDA — CNPJ 05.384.087/0001-61</span>
+      <strong>Gerador de Proposta Técnica</strong>
+    </div>
+  </div>
+  <nav>
+    <button class="btn-ghost" onclick="scrollToPreview()">Ver Prompt</button>
+    <button class="btn-primary" onclick="copyPrompt()">Copiar Prompt</button>
+    <button class="btn-danger" onclick="clearAll()">Limpar</button>
+  </nav>
+</header>
+
+<div class="layout">
+
+  <!-- FORMULÁRIO -->
+  <div class="form-panel" id="form-panel">
+
+    <!-- 1. IDENTIFICAÇÃO -->
+    <div class="section-block">
+      <div class="section-label"><span class="num">1</span> Identificação da Proposta</div>
+      <div class="field-row">
+        <div class="field">
+          <label>Nº do Orçamento</label>
+          <input type="text" id="f-orcamento" placeholder="Ex.: ORC-2025-042" oninput="update()">
+        </div>
+        <div class="field">
+          <label>Revisão</label>
+          <input type="text" id="f-revisao" placeholder="Ex.: Rev. 00" oninput="update()">
+        </div>
+      </div>
+      <div class="field">
+        <label>Cliente</label>
+        <input type="text" id="f-cliente" placeholder="Ex.: Coca-Cola Femsa" oninput="update()">
+      </div>
+      <div class="field">
+        <label>Contato Destinatário (opcional)</label>
+        <input type="text" id="f-contato-dest" placeholder="Ex.: Frederico" oninput="update()">
+      </div>
+      <div class="field">
+        <label>Endereço do Cliente</label>
+        <input type="text" id="f-endereco-cliente" placeholder="Ex.: Av. Assis Brasil, 6000 — Porto Alegre/RS" oninput="update()">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Nome da Obra / Contrato</label>
+          <input type="text" id="f-obra" placeholder="Ex.: Reforma Câmara Fria Bloco C" oninput="update()">
+        </div>
+        <div class="field">
+          <label>Local de Execução</label>
+          <input type="text" id="f-local" placeholder="Ex.: Galpão 3 — Área Produtiva" oninput="update()">
+        </div>
+      </div>
+      <div class="field">
+        <label>Responsável Técnico</label>
+        <input type="text" id="f-resp" placeholder="Ex.: Walter Venancio — CREA-RS 188808" oninput="update()">
+      </div>
+      <div class="field">
+        <label>Logo da empresa (opcional)</label>
+        <div class="upload-zone" id="upload-zone">
+          <input type="file" id="f-logo" accept="image/*" onchange="handleLogo(event)">
+          <div class="icon">📎</div>
+          <p><strong>Clique ou arraste o logo aqui</strong></p>
+          <p>PNG, JPG, SVG — aparece no cabeçalho ao gerar o .docx</p>
+          <img id="logo-preview-zone" style="display:none">
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. ESCOPO -->
+    <div class="section-block">
+      <div class="section-label"><span class="num">2</span> Escopo dos Serviços</div>
+      <div class="field">
+        <label>Descrição do escopo — objetivo e serviços a executar</label>
+        <textarea id="f-oque" placeholder="Descreva o objetivo da contratação e os serviços a executar. Ex.: Execução de piso industrial em concreto desempenado (2.500 m²) em galpão logístico, incluindo demolição do revestimento existente, regularização da base e acabamento final." oninput="update()" style="min-height:120px"></textarea>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Onde será executado</label>
+          <input type="text" id="f-onde" placeholder="Ex.: Galpão 3 — Área Produtiva" oninput="update()">
+        </div>
+        <div class="field">
+          <label>Condições atuais da área</label>
+          <input type="text" id="f-condicoes" placeholder="Ex.: área em operação, acesso restrito" oninput="update()">
+        </div>
+      </div>
+      <div class="field">
+        <label>Atividades principais (na ordem de execução)</label>
+        <textarea id="f-atividades" placeholder="Ex.: 1. Demolição do revestimento existente&#10;2. Regularização da base&#10;3. Execução do novo piso..." oninput="update()"></textarea>
+      </div>
+    </div>
+
+    <!-- 4. DOCUMENTOS -->
+    <div class="section-block">
+      <div class="section-label"><span class="num">3</span> Documentos de Referência</div>
+      <div class="field">
+        <label>Cole aqui: planilha orçamentária, edital, memorial ou escopo do cliente</label>
+        <textarea id="f-docs" placeholder="Cole aqui os textos ou dados extraídos dos documentos de referência..." oninput="update()" style="min-height:110px"></textarea>
+      </div>
+    </div>
+
+    <!-- 5. EXCLUSÕES -->
+    <div class="section-block">
+      <div class="section-label"><span class="num">4</span> Exclusões do Escopo</div>
+      <div class="field">
+        <label>Itens NÃO incluídos no fornecimento (deixar em branco para omitir da proposta)</label>
+        <textarea id="f-exclusoes" placeholder="Ex.: Projeto executivo; licenças e alvarás; fornecimento de energia temporária; serviços de outras disciplinas não descritos nesta proposta." oninput="update()" style="min-height:80px"></textarea>
+      </div>
+    </div>
+
+    <!-- 7. PRAZO -->
+    <div class="section-block">
+      <div class="section-label"><span class="num">5</span> Prazo e Execução</div>
+      <div class="field-row">
+        <div class="field">
+          <label>Prazo estimado</label>
+          <input type="text" id="f-prazo" placeholder="Ex.: 30 dias corridos" oninput="update()">
+        </div>
+        <div class="field">
+          <label>Restrições de execução</label>
+          <input type="text" id="f-restricao" placeholder="Ex.: somente finais de semana" oninput="update()">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Execução em parada?</label>
+          <div class="radio-row compact">
+            <label class="radio-label"><input type="radio" name="parada" value="Sim" onchange="update()"> Sim</label>
+            <label class="radio-label"><input type="radio" name="parada" value="Não" onchange="update()" checked> Não</label>
+            <label class="radio-label"><input type="radio" name="parada" value="Parcial" onchange="update()"> Parcial</label>
+          </div>
+        </div>
+        <div class="field">
+          <label>Execução em etapas?</label>
+          <div class="radio-row compact">
+            <label class="radio-label"><input type="radio" name="etapas" value="Não" onchange="update()" checked> Não</label>
+            <label class="radio-label"><input type="radio" name="etapas" value="Sim" onchange="update()"> Sim</label>
+          </div>
+        </div>
+      </div>
+      <div class="field" id="field-etapas-desc" style="display:none">
+        <label>Descrição das etapas</label>
+        <textarea id="f-etapas-desc" placeholder="Ex.: Etapa 1 — Demolição (final de semana); Etapa 2 — Execução do piso (semana seguinte)" oninput="update()"></textarea>
+      </div>
+    </div>
+
+    <!-- 8. CONDIÇÕES COMERCIAIS -->
+    <div class="section-block">
+      <div class="section-label"><span class="num">6</span> Condições Comerciais</div>
+
+      <div class="field">
+        <label>Valor Total (R$)</label>
+        <input type="text" id="f-valor" placeholder="Ex.: 12.500,00" oninput="update()">
+      </div>
+
+      <div class="field">
+        <label>Garantia dos serviços</label>
+        <input type="text" id="f-garantia" placeholder="Ex.: 12 meses após aceite definitivo" oninput="update()">
+      </div>
+
+      <div class="field">
+        <label>Modalidade de pagamento</label>
+        <div class="pgto-select">
+          <div class="pgto-row active" id="pgto-opt-mob" onclick="selectPgto('mobilizacao')">
+            <input type="radio" name="pgto-tipo" value="mobilizacao" checked>
+            <span>Com mobilização — 20% na OC + 80% por medições / entrega</span>
+          </div>
+          <div class="pgto-row" id="pgto-opt-med" onclick="selectPgto('medicao')">
+            <input type="radio" name="pgto-tipo" value="medicao">
+            <span>Somente medições mensais — sem mobilização</span>
+          </div>
+          <div class="pgto-row" id="pgto-opt-custom" onclick="selectPgto('custom')">
+            <input type="radio" name="pgto-tipo" value="custom">
+            <span>Condição específica do cliente (Ambev, Femsa, outros)</span>
+          </div>
+        </div>
+        <div class="pgto-extra" id="pgto-custom-field">
+          <div class="field" style="margin-top:8px;margin-bottom:0">
+            <label>Descrever a condição</label>
+            <textarea id="f-pgto-custom" placeholder="Ex.: Pagamento em 90 dias após emissão da NF conforme contrato Ambev. / Risco sacado Femsa — prazo a confirmar conforme modalidade do serviço." oninput="update()" style="min-height:60px"></textarea>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div><!-- /form-panel -->
+
+  <!-- PREVIEW -->
+  <div class="preview-panel">
+    <div class="preview-header">
+      <span>Preview do Prompt</span>
+      <button class="copy-btn" onclick="copyPrompt()" id="copy-btn">Copiar</button>
+    </div>
+    <pre id="prompt-preview"></pre>
+  </div>
+
+</div>
+
+<div id="toast">✓ Prompt copiado!</div>
+
+<script>
+let logoFileName = '';
+let logoDataUrl  = '';
+
+/* ── LOGO ── */
+function handleLogo(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  logoFileName = file.name;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    logoDataUrl = ev.target.result;
+    const zoneImg = document.getElementById('logo-preview-zone');
+    zoneImg.src = logoDataUrl; zoneImg.style.display = 'block';
+    document.querySelector('#upload-zone p:first-of-type').innerHTML = '<strong>' + file.name + '</strong>';
+    const hImg = document.getElementById('header-logo-img');
+    hImg.src = logoDataUrl; hImg.style.display = 'block';
+    document.getElementById('header-initials').style.display = 'none';
+    update();
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ── ETAPAS toggle ── */
+document.querySelectorAll('input[name="etapas"]').forEach(r => {
+  r.addEventListener('change', () => {
+    document.getElementById('field-etapas-desc').style.display =
+      r.value === 'Sim' && r.checked ? 'block' : 'none';
+    update();
+  });
+});
+
+/* ── PAGAMENTO toggle ── */
+function selectPgto(tipo) {
+  ['mobilizacao','medicao','custom'].forEach(t => {
+    document.getElementById('pgto-opt-' + (t==='mobilizacao'?'mob':t==='medicao'?'med':'custom'))
+      .classList.toggle('active', t===tipo);
+  });
+  document.querySelector('input[name="pgto-tipo"][value="'+tipo+'"]').checked = true;
+  document.getElementById('pgto-custom-field').classList.toggle('show', tipo==='custom');
+  update();
+}
+
+/* ── EXCLUSÕES ── */
+function getExclusoes() {
+  return v('f-exclusoes');
+}
+
+/* ── HELPERS ── */
+function v(id, fallback) {
+  const el = document.getElementById(id);
+  return el ? el.value.trim() : (fallback || '');
+}
+function getRadio(name) {
+  const el = document.querySelector('input[name="'+name+'"]:checked');
+  return el ? el.value : '';
+}
+function getPgtoTipo() {
+  const el = document.querySelector('input[name="pgto-tipo"]:checked');
+  return el ? el.value : 'mobilizacao';
+}
+
+/* ── VALOR POR EXTENSO ── */
+function valorExtenso(str) {
+  if (!str) return '';
+  str = str.replace(/\s/g,'').replace(',','.');
+  const num = parseFloat(str);
+  if (isNaN(num)) return str;
+  const inteiros = Math.floor(num);
+  const centavos = Math.round((num - inteiros) * 100);
+  const unidades = ['','um','dois','três','quatro','cinco','seis','sete','oito','nove','dez','onze','doze','treze','quatorze','quinze','dezesseis','dezessete','dezoito','dezenove'];
+  const dezenas  = ['','','vinte','trinta','quarenta','cinquenta','sessenta','setenta','oitenta','noventa'];
+  const centenas = ['','cento','duzentos','trezentos','quatrocentos','quinhentos','seiscentos','setecentos','oitocentos','novecentos'];
+  function grupo(n) {
+    if (n === 0) return '';
+    if (n === 100) return 'cem';
+    let r = '';
+    if (n >= 100) { r += centenas[Math.floor(n/100)]; n %= 100; if (n) r += ' e '; }
+    if (n >= 20)  { r += dezenas[Math.floor(n/10)]; n %= 10; if (n) r += ' e '; }
+    if (n > 0)    { r += unidades[n]; }
+    return r;
+  }
+  if (inteiros === 0 && centavos === 0) return 'zero reais';
+  let partes = [];
+  if (inteiros >= 1000000) {
+    const m = Math.floor(inteiros/1000000);
+    partes.push(grupo(m) + (m === 1 ? ' milhão' : ' milhões'));
+  }
+  if (inteiros >= 1000) {
+    const m = Math.floor((inteiros % 1000000)/1000);
+    if (m) partes.push(grupo(m) + (m === 1 ? ' mil' : ' mil'));
+  }
+  const r = inteiros % 1000;
+  if (r) partes.push(grupo(r));
+  let texto = partes.join(' e ');
+  if (inteiros > 0) texto += inteiros === 1 ? ' real' : ' reais';
+  if (centavos > 0) {
+    if (inteiros > 0) texto += ' e ';
+    texto += grupo(centavos) + (centavos === 1 ? ' centavo' : ' centavos');
+  }
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
+}
+
+/* ── BUILD PROMPT ── */
+function buildPrompt() {
+  const parada  = getRadio('parada');
+  const etapas  = getRadio('etapas');
+  const pgto    = getPgtoTipo();
+  const excls   = getExclusoes();
+  const valorBruto = v('f-valor');
+  const valorFmt   = valorBruto ? 'R$ ' + valorBruto : '[A DEFINIR]';
+  const valorExt   = valorBruto ? valorExtenso(valorBruto.replace('.','').replace(',','.')) : '[valor por extenso]';
+  const orcNum  = v('f-orcamento') || '[Nº ORÇAMENTO]';
+  const revisao = v('f-revisao') || 'Rev. 00';
+
+  const blocos = [];
+
+  /* PAPEL */
+  blocos.push(`# PAPEL E CONTEXTO
+
+Você é engenheiro civil responsável pela elaboração de propostas técnicas e comerciais da empresa AA Construções & Reformas LTDA (CNPJ 05.384.087/0001-61).
+
+O documento gerado será utilizado como proposta formal a ser apresentada ao cliente para análise e contratação dos serviços.`);
+
+  /* OBJETIVO */
+  blocos.push(`## OBJETIVO
+
+Gerar uma proposta técnica completa, objetiva e profissional, com base nas informações do INPUT abaixo.
+
+A proposta deve:
+- Descrever claramente o objeto da contratação e o escopo dos serviços
+- Delimitar o que está incluído e, quando informado, o que está excluído do fornecimento
+- Apresentar as condições comerciais, prazo e garantia de forma precisa
+- Usar linguagem técnica, direta e adequada ao ambiente industrial/comercial`);
+
+  /* FORMATO */
+  blocos.push(`## FORMATO DE ENTREGA
+
+Gerar a proposta como arquivo .docx para download, seguindo o padrão visual abaixo.
+
+- **Nome do arquivo:** Proposta ${orcNum} (sem extensão adicional — o próprio .docx já é o formato final)
+  Exemplo: "Proposta 0500-2026.docx"
+
+### Página
+- Tamanho: A4
+- Margens: superior 2cm, inferior 2cm, direita 2cm, esquerda 2,5cm
+
+### Tipografia
+- Fonte: Arial em todo o documento, cor preta (#000000)
+- Corpo do texto: 10pt, alinhamento justificado, recuo de primeira linha 1,25cm, espaçamento depois 6pt, entrelinhas 1,15
+- Parágrafos com marcadores (–): 10pt, justificado, entrelinhas 1,15, espaçamento depois 6pt, recuo à esquerda 0,63cm, sem recuo de primeira linha
+- Títulos H1 (seções principais): 13pt, negrito, alinhamento à esquerda, com linha inferior preta fina, espaçamento antes 24pt, depois 6pt
+- Títulos H2 (subseções): 11pt, negrito, alinhamento à esquerda, espaçamento antes 24pt, depois 6pt
+- Somente os textos do cabeçalho (tabela do topo) são centralizados — todo o restante do documento é alinhado à esquerda ou justificado conforme acima
+
+### Cabeçalho do documento (todas as páginas, exceto folha de rosto)
+- Sem tabela. Bloco alinhado à esquerda no topo de cada página a partir da página 2:
+${logoFileName ? `  - Logo da empresa: inserir imagem "${logoFileName}" alinhada à esquerda, altura máxima 1,5cm, sem quebra de linha — logo posicionado à esquerda` : '  - Sem logo: omitir espaço de imagem'}
+  - Abaixo do logo (ou no topo se sem logo): "AA Construções & Reformas LTDA" — negrito, 12pt, alinhado à esquerda
+  - Linha seguinte: "CNPJ 05.384.087/0001-61" — 10pt, alinhado à esquerda
+  - Linha separadora horizontal fina abaixo do bloco de cabeçalho
+  - Espaçamento abaixo do cabeçalho: 18pt
+
+### Página 1 — Folha de Rosto (sem cabeçalho, sem numeração de página)
+A primeira página é exclusivamente uma folha de rosto, sem cabeçalho e sem número de página.
+Estrutura da folha de rosto, do topo para baixo, com espaçamentos generosos entre os blocos:
+
+Bloco 1 — canto superior direito, alinhado à direita:
+- "Orçamento ${orcNum}"
+- "Revisão: ${revisao}"
+- "Porto Alegre, [data atual por extenso]"
+
+Bloco 2 — destinatário, alinhado à esquerda, após espaçamento de ~3cm do bloco 1:
+- Linha 1 (negrito): "À ${v('f-contato-dest') ? v('f-contato-dest') + ', ' + (v('f-cliente') || '[CLIENTE]') : (v('f-cliente') || '[CLIENTE]')}"
+  — iniciar sempre com "À" (acento grave), seguido do nome do contato (se informado) + vírgula + nome da empresa, ou apenas o nome da empresa se contato não informado. Todo o conteúdo desta linha em negrito.
+- Linha 2 (normal, sem negrito): endereço do cliente
+
+Bloco 3 — identificação do objeto, centralizado, após espaçamento de ~4cm do bloco 2:
+- Nome da empresa do cliente (maiúsculas, negrito, 12pt)
+- Endereço da obra (10pt)
+- Linha em branco
+- Título do orçamento / serviço (maiúsculas, negrito, 13pt)
+
+Bloco 4 — corpo da carta, alinhado à esquerda, após espaçamento de ~3cm do bloco 3:
+Texto fixo (Arial 10pt, justificado, entrelinhas 1,15):
+
+"Prezado(a),
+
+Atendendo a vossa solicitação, estamos enviando-lhe a nossa proposta técnica e comercial para execução dos serviços em referência.
+Na expectativa de poder servi-lo, colocamo-nos à disposição para eventuais esclarecimentos."
+
+Bloco 5 — assinatura, alinhado à esquerda, após espaçamento de ~2cm do bloco 4:
+"Atenciosamente,
+Adair Antônio Klein
+Diretor Executivo
+(51) 98131-1343"
+
+### Página 2 em diante — conteúdo da proposta
+- O conteúdo da proposta (seções 1 a N) inicia obrigatoriamente na página 2, após quebra de página explícita ao final da folha de rosto
+- O cabeçalho simplificado (nome + CNPJ, conforme item acima) aparece em todas as páginas a partir da página 2
+
+### Identificação da proposta
+A seção 1 deve ser uma tabela de 2 colunas (rótulo | valor) com exatamente os seguintes campos, nesta ordem:
+- Cliente
+- Endereço
+- Serviço
+- Local de Execução
+- Contato Comercial
+- Nº da Proposta
+- Data de Emissão
+
+### Numeração e hierarquia
+- Nível 1 (seções): 1. TÍTULO, 2. TÍTULO, 3. TÍTULO... — negrito, H1
+- Nível 2 (subseções): 2.1 Subtítulo, 3.1 Subtítulo... — negrito, H2
+- Nível 3 (itens): marcador "–" (travessão), sem numeração
+- Nunca reiniciar numeração dentro de uma seção
+
+### Estrutura obrigatória
+Gerar todas as seções abaixo, nesta ordem:
+
+1. IDENTIFICAÇÃO DA PROPOSTA — tabela conforme campos acima
+2. OBJETO — objetivo da contratação com resultado esperado, elaborado a partir da descrição do escopo
+3. ESCOPO DOS SERVIÇOS — itens 3.1, 3.2... com subitens marcados com –
+${excls ? '4. EXCLUSÕES DO ESCOPO — lista do que NÃO está incluído no fornecimento\n5.' : '4.'} PRAZO DE EXECUÇÃO — em dias corridos a partir da autorização formal, com texto padrão
+${excls ? '6.' : '5.'} CONDIÇÕES COMERCIAIS — Valor Total, Garantia, Condições de Pagamento, Validade, Condições de Entrega, Preços e CNPJ de Faturamento
+${excls ? '7.' : '6.'} OBRIGAÇÕES DA CONTRATANTE — lista de responsabilidades`);
+
+  /* REGRAS */
+  blocos.push(`## REGRAS DE ELABORAÇÃO
+
+- A seção OBJETO deve ser elaborada pelo modelo com base na descrição do escopo — redigir de forma objetiva o propósito da contratação e o resultado esperado
+- Quando o INPUT estiver incompleto, sinalizar com: [A DEFINIR]
+- Nunca inventar especificações técnicas, marcas ou quantitativos não informados
+- Nunca duplicar itens em listas
+- O prazo de execução deve usar o texto: "O prazo estimado para execução dos serviços é de XX dias corridos, contados a partir da aprovação formal da proposta, envio do pedido de compra ou autorização formal do cliente por e-mail."
+- Se exclusões não forem informadas, omitir a seção EXCLUSÕES DO ESCOPO integralmente
+- Não incluir bloco de assinatura ao final do documento
+- Aplicar rigorosamente o padrão tipográfico: Arial 10pt, justificado, entrelinhas 1,15, espaçamento depois 6pt, recuo de primeira linha 1,25cm nos parágrafos de corpo
+- Títulos H1 e H2 alinhados à esquerda; somente o cabeçalho (tabela do topo) é centralizado
+- Parágrafos com marcadores: espaçamento depois 6pt, entrelinhas 1,15, recuo à esquerda 0,63cm, sem recuo de primeira linha
+- Terceiro nível sempre com marcador – (travessão), nunca numerado
+- Adaptar o escopo ao contexto real de obra civil/industrial informado
+- Na seção CONDIÇÕES COMERCIAIS: NÃO usar subseções numeradas (6.1, 6.2...). Usar lista de marcadores (–), recuo à esquerda 0,63cm, justificado, entrelinhas 1,15, espaçamento depois 12pt. Cada item no formato: **Rótulo**: descrição — onde o texto antes dos dois-pontos (:) deve estar em negrito e o restante em texto normal. Exemplo: **Valor Total**: R$ 12.504,33 (Doze mil reais).`);
+
+  /* INPUT */
+  let inp = `## INPUT DA PROPOSTA\n`;
+
+  inp += `\n### 1. IDENTIFICAÇÃO DA PROPOSTA\n`;
+  inp += `- Cliente: ${v('f-cliente') || '—'}\n`;
+  inp += `- Contato Destinatário: ${v('f-contato-dest') || '(não informado)'}\n`;
+  inp += `- Endereço: ${v('f-endereco-cliente') || '—'}\n`;
+  inp += `- Serviço: ${v('f-obra') || '—'}\n`;
+  inp += `- Local de Execução: ${v('f-local') || '—'}\n`;
+  inp += `- Contato Comercial: Adair Antônio Klein — Diretor Executivo — (51) 98131-1343\n`;
+  inp += `- Nº da Proposta: ${orcNum}\n`;
+  inp += `- Data de Emissão: preencher com a data atual\n`;
+
+  inp += `\n### 2. ESCOPO DOS SERVIÇOS\n`;
+  if (v('f-oque'))       inp += `Descrição: ${v('f-oque')}\n`;
+  if (v('f-onde'))       inp += `Onde: ${v('f-onde')}\n`;
+  if (v('f-condicoes'))  inp += `Condições da área: ${v('f-condicoes')}\n`;
+  if (v('f-atividades')) inp += `\nAtividades principais:\n${v('f-atividades')}\n`;
+  if (!v('f-oque') && !v('f-atividades')) inp += `—\n`;
+
+  inp += `\n### 3. DOCUMENTOS DE REFERÊNCIA\n`;
+  inp += v('f-docs') || 'Não informado';
+  inp += `\n`;
+
+  if (excls) {
+    inp += `\n### 4. EXCLUSÕES DO ESCOPO\n${excls}\n`;
+  }
+
+  inp += `\n### ${excls ? '5' : '4'}. PRAZO E EXECUÇÃO\n`;
+  inp += `- Prazo estimado: ${v('f-prazo') || '[A DEFINIR]'}\n`;
+  inp += `- Restrições: ${v('f-restricao') || 'Nenhuma informada'}\n`;
+  inp += `- Execução em parada: ${parada}\n`;
+  inp += `- Execução em etapas: ${etapas}\n`;
+  if (etapas === 'Sim' && v('f-etapas-desc')) {
+    inp += `- Descrição das etapas: ${v('f-etapas-desc')}\n`;
+  }
+
+  inp += `\n### ${excls ? '6' : '5'}. CONDIÇÕES COMERCIAIS\n`;
+  inp += `- Valor Total: ${valorFmt} (${valorExt})\n`;
+  inp += `- Garantia: ${v('f-garantia') || '12 meses após aceite definitivo [padrão]'}\n`;
+
+  if (pgto === 'mobilizacao') {
+    inp += `- Condições de Pagamento:\n`;
+    inp += `  Mobilização: 20% do valor global na assinatura do contrato ou envio da OC, destinado à cobertura de custos de preparação, logística e mobilização de equipe, equipamentos e insumos.\n`;
+    inp += `  Saldo Final: 80% por medições mensais proporcionais ao avanço físico, ou em parcela única após entrega e aceite definitivo dos serviços.\n`;
+  } else if (pgto === 'medicao') {
+    inp += `- Condições de Pagamento:\n`;
+    inp += `  Faturamento exclusivamente por medições mensais, proporcionais ao avanço físico efetivamente executado e comprovado, conforme critérios de medição previamente acordados e mediante aceite formal da contratante.\n`;
+  } else {
+    inp += `- Condições de Pagamento (específica do cliente):\n`;
+    inp += `  ${v('f-pgto-custom') || '[A DESCREVER]'}\n`;
+  }
+
+  inp += `- Validade da Proposta: 60 (sessenta) dias corridos da data de emissão.\n`;
+  inp += `- Condições de Entrega: CIF – materiais entregues no local da obra pela contratada.\n`;
+  inp += `- Preços: Incluindo todos os impostos incidentes.\n`;
+  inp += `- CNPJ de Faturamento: 05.384.087/0001-61 – A. A. Construções & Reformas LTDA.\n`;
+
+  inp += `\n### ${excls ? '7' : '6'}. OBRIGAÇÕES DA CONTRATANTE\n`;  inp += `Incluir as seguintes obrigações da contratante, adaptadas ao contexto da obra:
+- Liberar as frentes de trabalho conforme o planejamento de execução previamente aprovado, possibilitando o cumprimento dos prazos estabelecidos.
+- Fiscalizar a execução dos serviços e comunicar à Contratada, em tempo hábil, qualquer não conformidade em relação às especificações acordadas.
+- Colaborar com a Contratada quando solicitado, fornecendo interpretações e informações adicionais necessárias à correta execução dos serviços.
+- Redigir o contrato de prestação de serviços ou emitir o pedido formal para o início das atividades, conforme acordado entre as partes.
+- Cumprir os acordos técnicos e comerciais estabelecidos nesta proposta, garantindo que todas as condições sejam observadas durante a execução.
+- Permitir a execução das atividades durante o horário comercial, de segunda a sexta-feira, com possibilidade de execução nos finais de semana quando necessário.
+- Apoiar nas intervenções em painéis e infraestruturas de propriedade da Contratante, facilitando o acesso e fornecendo os recursos necessários.\n`;
+
+  blocos.push(inp);
+  return blocos.join('\n\n---\n\n');
+}
+
+/* ── UPDATE PREVIEW ── */
+function update() {
+  document.getElementById('prompt-preview').textContent = buildPrompt();
+}
+
+/* ── COPIAR ── */
+function copyPrompt() {
+  navigator.clipboard.writeText(buildPrompt()).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copiado ✓'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('copied'); }, 2000);
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+  });
+}
+
+/* ── LIMPAR ── */
+function clearAll() {
+  if (!confirm('Limpar todos os campos?')) return;
+  document.querySelectorAll('input[type=text], textarea').forEach(el => el.value = '');
+  document.querySelector('input[name="parada"][value="Não"]').checked = true;
+  document.querySelector('input[name="etapas"][value="Não"]').checked = true;
+  document.getElementById('field-etapas-desc').style.display = 'none';
+  selectPgto('mobilizacao');
+  logoFileName = ''; logoDataUrl = '';
+  document.getElementById('logo-preview-zone').style.display = 'none';
+  const hImg = document.getElementById('header-logo-img');
+  hImg.style.display = 'none';
+  document.getElementById('header-initials').style.display = '';
+  document.querySelector('#upload-zone p:first-of-type').innerHTML = '<strong>Clique ou arraste o logo aqui</strong>';
+  update();
+}
+
+/* ── SCROLL MOBILE ── */
+function scrollToPreview() {
+  document.querySelector('.preview-panel').scrollIntoView({ behavior: 'smooth' });
+}
+
+/* ── DRAG/DROP LOGO ── */
+const zone = document.getElementById('upload-zone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+zone.addEventListener('drop', e => {
+  e.preventDefault(); zone.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) {
+    document.getElementById('f-logo').files = e.dataTransfer.files;
+    handleLogo({ target: { files: [file] } });
+  }
+});
+
+/* ── INIT ── */
+update();
+</script>
+<script src="aac-modern-ui.js"></script>
+</body>
+</html>

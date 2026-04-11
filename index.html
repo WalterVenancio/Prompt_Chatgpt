@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Central de Prompts</title>
+  <style>
+    :root {
+      --bg: #f3efe8;
+      --bg-strong: #e8dfd2;
+      --surface: rgba(255, 255, 255, 0.78);
+      --surface-strong: #ffffff;
+      --text: #1f1b16;
+      --muted: #6f665a;
+      --line: rgba(48, 38, 27, 0.12);
+      --accent: #1f5a7a;
+      --accent-soft: rgba(31, 90, 122, 0.12);
+      --accent-strong: #163f56;
+      --shadow: 0 24px 60px rgba(52, 36, 20, 0.12);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(31, 90, 122, 0.12), transparent 24%),
+        radial-gradient(circle at bottom right, rgba(168, 118, 63, 0.14), transparent 22%),
+        linear-gradient(180deg, #f8f4ee 0%, #f2ece3 100%);
+      min-height: 100vh;
+    }
+
+    .shell {
+      width: min(1400px, calc(100vw - 32px));
+      margin: 20px auto;
+      background: rgba(255, 255, 255, 0.52);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+      overflow: hidden;
+    }
+
+    .hero {
+      padding: 28px 28px 18px;
+      border-bottom: 1px solid var(--line);
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.72), rgba(255,255,255,0.42)),
+        linear-gradient(120deg, rgba(31, 90, 122, 0.06), rgba(168, 118, 63, 0.08));
+    }
+
+    .eyebrow {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--muted);
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 46px);
+      line-height: 1.05;
+      max-width: 760px;
+    }
+
+    .hero p {
+      margin: 14px 0 0;
+      max-width: 760px;
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--muted);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 340px minmax(0, 1fr);
+      min-height: 78vh;
+    }
+
+    .sidebar {
+      padding: 22px;
+      border-right: 1px solid var(--line);
+      background: rgba(255, 252, 248, 0.72);
+    }
+
+    .sidebar h2 {
+      margin: 0 0 8px;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+    }
+
+    .sidebar p {
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .prompt-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .prompt-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      padding: 16px;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+      text-align: left;
+      width: 100%;
+      color: inherit;
+    }
+
+    .prompt-card:hover,
+    .prompt-card.active {
+      transform: translateY(-2px);
+      box-shadow: 0 18px 40px rgba(46, 34, 18, 0.12);
+      border-color: rgba(31, 90, 122, 0.34);
+      background: var(--surface-strong);
+    }
+
+    .prompt-card.active {
+      background: linear-gradient(180deg, #ffffff, #f5fbff);
+    }
+
+    .prompt-card strong {
+      display: block;
+      font-size: 16px;
+      margin-bottom: 6px;
+    }
+
+    .prompt-card span {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .quick-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    .action-btn {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--text);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.18s ease;
+    }
+
+    .action-btn:hover {
+      border-color: rgba(31, 90, 122, 0.3);
+      background: var(--accent-soft);
+      color: var(--accent-strong);
+    }
+
+    .viewer {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .viewer-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.74);
+      border-radius: var(--radius);
+    }
+
+    .viewer-label strong {
+      display: block;
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
+
+    .viewer-label span {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .frame-wrap {
+      border-radius: 26px;
+      overflow: hidden;
+      border: 1px solid rgba(26, 20, 14, 0.12);
+      background: #fff;
+      min-height: 720px;
+    }
+
+    iframe {
+      width: 100%;
+      height: 78vh;
+      min-height: 720px;
+      border: 0;
+      background: #fff;
+    }
+
+    .note {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.68);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 980px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .viewer-bar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .shell {
+        width: min(100vw - 12px, 100%);
+        margin: 6px auto;
+        border-radius: 22px;
+      }
+
+      .hero,
+      .sidebar,
+      .viewer {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      iframe {
+        min-height: 78vh;
+        height: 78vh;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div class="eyebrow">Central unica</div>
+      <h1>Escolha um dos 3 geradores de prompt e copie o texto pronto.</h1>
+      <p>Esta pagina serve como hub para publicar tudo no GitHub em um unico link. Voce seleciona o gerador desejado na lateral, preenche os campos e usa o botao de copiar dentro da propria ferramenta.</p>
+    </section>
+
+    <section class="layout">
+      <aside class="sidebar">
+        <h2>Prompts</h2>
+        <p>Os tres arquivos continuam funcionando como antes, mas agora ficam reunidos em uma unica entrada para abrir no GitHub Pages.</p>
+
+        <div class="prompt-list" id="prompt-list"></div>
+
+        <div class="quick-actions">
+          <a class="action-btn" id="open-current" href="#" target="_blank" rel="noopener noreferrer">Abrir em nova aba</a>
+        </div>
+
+        <div class="note">
+          Dica: no GitHub, deixe este arquivo como <strong>index.html</strong>. Assim, ao ativar o GitHub Pages, essa sera a pagina inicial do projeto.
+        </div>
+      </aside>
+
+      <section class="viewer">
+        <div class="viewer-bar">
+          <div class="viewer-label">
+            <strong id="viewer-title">Carregando...</strong>
+            <span id="viewer-description">Selecione um gerador para comecar.</span>
+          </div>
+          <a class="action-btn" id="open-current-top" href="#" target="_blank" rel="noopener noreferrer">Abrir arquivo direto</a>
+        </div>
+
+        <div class="frame-wrap">
+          <iframe id="prompt-frame" title="Visualizador de prompts"></iframe>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const pages = [
+      {
+        id: "proposta",
+        title: "Proposta Comercial AAC",
+        description: "Gerador para proposta tecnica e comercial.",
+        file: "Prompt_Proposta_Comercial_AAC.html"
+      },
+      {
+        id: "custos",
+        title: "Composicao de Custos",
+        description: "Gerador para montar composicao de custos.",
+        file: "Gerador de Composição de Custos.html"
+      },
+      {
+        id: "descricoes",
+        title: "Descricoes da Planilha",
+        description: "Gerador para descrever itens da planilha orcamentaria.",
+        file: "Gerador de Descrições — Planilha Orçamentária.html"
+      }
+    ];
+
+    const list = document.getElementById("prompt-list");
+    const frame = document.getElementById("prompt-frame");
+    const title = document.getElementById("viewer-title");
+    const description = document.getElementById("viewer-description");
+    const openCurrent = document.getElementById("open-current");
+    const openCurrentTop = document.getElementById("open-current-top");
+
+    const setActive = (pageId) => {
+      const page = pages.find((item) => item.id === pageId) || pages[0];
+      const encodedFile = encodeURI(page.file);
+
+      title.textContent = page.title;
+      description.textContent = page.description;
+      frame.src = encodedFile;
+      openCurrent.href = encodedFile;
+      openCurrentTop.href = encodedFile;
+
+      document.querySelectorAll(".prompt-card").forEach((button) => {
+        button.classList.toggle("active", button.dataset.id === page.id);
+      });
+    };
+
+    pages.forEach((page) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "prompt-card";
+      button.dataset.id = page.id;
+      button.innerHTML = `<strong>${page.title}</strong><span>${page.description}</span>`;
+      button.addEventListener("click", () => setActive(page.id));
+      list.appendChild(button);
+    });
+
+    setActive(pages[0].id);
+  </script>
+</body>
+</html>

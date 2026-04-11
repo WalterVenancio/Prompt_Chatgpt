@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerador de Composição de Custos</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --dark: #111111;
+  --dark2: #1a1a1a;
+  --dark3: #222222;
+  --dark-border: #2e2e2e;
+  --accent: #00c896;
+  --accent-dim: rgba(0,200,150,0.12);
+  --light-bg: #f5f4f0;
+  --surface: #ffffff;
+  --border: #e0ddd8;
+  --border2: #c8c4bc;
+  --text: #1a1916;
+  --text2: #6b6860;
+  --text3: #9c9890;
+  --blue: #1d4ed8;
+  --blue-light: #eff6ff;
+  --blue-border: #bfdbfe;
+  --radius: 6px;
+  --radius-lg: 10px;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--light-bg);
+  color: var(--text);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-size: 13px;
+}
+
+/* HEADER */
+.header {
+  background: var(--dark);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 56px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--dark-border);
+}
+.header-left { display: flex; flex-direction: column; gap: 2px; }
+.header-left .company { font-size: 10px; font-weight: 500; color: #888; letter-spacing: 0.08em; text-transform: uppercase; }
+.header-left .title { font-size: 15px; font-weight: 600; color: #fff; }
+.header-right { display: flex; gap: 10px; align-items: center; }
+
+.hbtn {
+  height: 34px;
+  padding: 0 16px;
+  border-radius: var(--radius);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.hbtn-white { background: #fff; color: #111; border-color: #fff; }
+.hbtn-white:hover { background: #eee; }
+.hbtn-danger { background: transparent; color: #f87171; border-color: #7f1d1d; }
+.hbtn-danger:hover { background: #450a0a; }
+
+/* LAYOUT */
+.body-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* PAINEL ESQUERDO */
+.left-panel {
+  background: var(--light-bg);
+  overflow-y: auto;
+  padding: 24px 22px;
+  border-right: 1px solid var(--border);
+}
+
+.step-block { margin-bottom: 24px; }
+.step-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 16px;
+}
+.step-num {
+  width: 22px; height: 22px;
+  background: var(--dark);
+  color: #fff;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.step-header h2 {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text2);
+}
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.form-row.full { grid-template-columns: 1fr; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text2);
+}
+input[type=text], textarea, select {
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 11px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  width: 100%;
+}
+input[type=text]:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--dark);
+  box-shadow: 0 0 0 3px rgba(0,0,0,0.06);
+}
+input::placeholder, textarea::placeholder { color: var(--text3); }
+textarea { resize: vertical; line-height: 1.6; }
+
+.divider { height: 1px; background: var(--border); margin: 18px 0; }
+
+/* campo "outros" inline */
+.outros-wrap { margin-top: 8px; display: none; }
+.outros-wrap.visible { display: block; }
+
+/* PAINEL DIREITO */
+.right-panel {
+  background: var(--dark);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.preview-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--dark-border);
+  flex-shrink: 0;
+}
+.preview-header span {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #555;
+}
+.preview-copy-btn {
+  height: 30px;
+  padding: 0 14px;
+  background: var(--accent);
+  color: #000;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.preview-copy-btn:hover { background: #00b084; }
+
+.preview-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 22px;
+  font-family: 'Consolas', 'Cascadia Code', 'Monaco', monospace;
+  font-size: 12px;
+  line-height: 1.8;
+  color: #ccc;
+  white-space: pre-wrap;
+}
+.preview-content .ph { color: #444; font-style: italic; }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 20px; right: 20px;
+  background: #000; color: #fff;
+  padding: 10px 16px; border-radius: var(--radius);
+  font-size: 12px; font-weight: 500;
+  opacity: 0; transform: translateY(6px);
+  transition: all 0.18s; pointer-events: none; z-index: 999;
+  border: 1px solid var(--dark-border);
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+
+.hint { font-size: 11px; color: var(--text3); margin-top: 5px; line-height: 1.5; }
+
+/* tag chips para disciplina e tipo de serviço */
+.chip-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.chip {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  padding: 5px 11px;
+  border-radius: 20px;
+  border: 1px solid var(--border2);
+  background: var(--surface);
+  color: var(--text2);
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.12s;
+}
+.chip:hover { border-color: var(--text2); color: var(--text); }
+.chip.on { background: var(--dark); color: #fff; border-color: var(--dark); }
+
+/* select aparência */
+select option[value=""] { color: var(--text3); }
+</style>
+<link rel="stylesheet" href="aac-modern-theme.css">
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-left">
+    <span class="company">Venancio Engenharia</span>
+    <span class="title">Gerador de Composição de Custos</span>
+  </div>
+  <div class="header-right">
+    <button class="hbtn hbtn-white" onclick="copiarPrompt()">COPIAR PROMPT</button>
+    <button class="hbtn hbtn-danger" onclick="limparTudo()">LIMPAR</button>
+  </div>
+</header>
+
+<!-- BODY SPLIT -->
+<div class="body-split">
+
+  <!-- ESQUERDO -->
+  <div class="left-panel">
+
+    <!-- BLOCO 1: CONTEXTO DO ORÇAMENTO -->
+    <div class="step-block">
+      <div class="step-header">
+        <div class="step-num">1</div>
+        <h2>Contexto do Orçamento</h2>
+      </div>
+
+      <div class="form-row full">
+        <div class="form-group">
+          <label>Contexto / Ambiente da Obra</label>
+          <textarea id="contexto" rows="2"
+            placeholder="Ex: Planta industrial em operação, restrições de acesso, área classificada, serviço noturno, restrição de interferências..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- BLOCO 2: DISCIPLINA -->
+    <div class="step-block">
+      <div class="step-header">
+        <div class="step-num">2</div>
+        <h2>Disciplina</h2>
+      </div>
+
+      <div class="chip-grid" id="chips-disciplina">
+        <span class="chip" data-v="Civil">Civil</span>
+        <span class="chip" data-v="Estrutural">Estrutural</span>
+        <span class="chip" data-v="Elétrica">Elétrica</span>
+        <span class="chip" data-v="Hidráulica / Sanitária">Hidráulica / Sanitária</span>
+        <span class="chip" data-v="Mecânica / Tubulação">Mecânica / Tubulação</span>
+        <span class="chip" data-v="HVAC / Climatização">HVAC / Climatização</span>
+        <span class="chip" data-v="Instrumentação">Instrumentação</span>
+        <span class="chip" data-v="Incêndio / SPDA">Incêndio / SPDA</span>
+        <span class="chip" data-v="Outros">Outros</span>
+      </div>
+
+      <div class="outros-wrap" id="outros-disciplina-wrap">
+        <input type="text" id="outros-disciplina" placeholder="Especifique a disciplina...">
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- BLOCO 3: TIPO DE SERVIÇO -->
+    <div class="step-block">
+      <div class="step-header">
+        <div class="step-num">3</div>
+        <h2>Tipo de Serviço</h2>
+      </div>
+
+      <div class="chip-grid" id="chips-tipo">
+        <span class="chip" data-v="Construção Nova">Construção Nova</span>
+        <span class="chip" data-v="Reforma / Retrofit">Reforma / Retrofit</span>
+        <span class="chip" data-v="Manutenção Predial">Manutenção Predial</span>
+        <span class="chip" data-v="Manutenção Industrial">Manutenção Industrial</span>
+        <span class="chip" data-v="Montagem Metálica">Montagem Metálica</span>
+        <span class="chip" data-v="Instalação de Equipamento">Instalação de Equipamento</span>
+        <span class="chip" data-v="Demolição / Desmontagem">Demolição / Desmontagem</span>
+        <span class="chip" data-v="Adequação / Regularização">Adequação / Regularização</span>
+        <span class="chip" data-v="Outros">Outros</span>
+      </div>
+
+      <div class="outros-wrap" id="outros-tipo-wrap">
+        <input type="text" id="outros-tipo" placeholder="Especifique o tipo de serviço...">
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- BLOCO 4: DESCRIÇÃO DA ATIVIDADE -->
+    <div class="step-block">
+      <div class="step-header">
+        <div class="step-num">4</div>
+        <h2>Descrição da Atividade</h2>
+      </div>
+
+      <p class="hint" style="margin-bottom:10px;">
+        Descreva o serviço que deseja orçar. Seja específico: material, dimensões, condições de execução, quantidade estimada se souber.
+      </p>
+
+      <div class="form-group">
+        <textarea id="descricao" rows="6"
+          placeholder="Ex: Fornecimento e montagem de tubulação de aço carbono schedule 40, diâmetro 4 polegadas, incluindo solda, suportes e teste hidrostático, em área industrial com restrição de acesso..."></textarea>
+      </div>
+    </div>
+
+  </div><!-- /left-panel -->
+
+  <!-- DIREITO: PREVIEW -->
+  <div class="right-panel">
+    <div class="preview-header">
+      <span>Preview do Prompt</span>
+      <button class="preview-copy-btn" onclick="copiarPrompt()">COPIAR</button>
+    </div>
+    <div class="preview-content" id="preview">
+<span class="ph">Preencha os campos ao lado para gerar o prompt de composição de custos...</span>
+    </div>
+  </div>
+
+</div><!-- /body-split -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CHIPS ─────────────────────────────────────────────────────
+
+function setupChips(groupId, outrosWrapId) {
+  const chips = document.querySelectorAll(`#${groupId} .chip`);
+  const outrosWrap = document.getElementById(outrosWrapId);
+
+  chips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      chip.classList.toggle('on');
+      // Verifica se "Outros" está ativo
+      const outrosChip = [...chips].find(c => c.dataset.v === 'Outros');
+      if (outrosChip && outrosChip.classList.contains('on')) {
+        outrosWrap.classList.add('visible');
+      } else {
+        outrosWrap.classList.remove('visible');
+      }
+      gerarPrompt();
+    });
+  });
+}
+
+setupChips('chips-disciplina', 'outros-disciplina-wrap');
+setupChips('chips-tipo', 'outros-tipo-wrap');
+
+// Atualização em tempo real
+['contexto', 'descricao', 'outros-disciplina', 'outros-tipo'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', gerarPrompt);
+});
+
+// ── GET VALORES ───────────────────────────────────────────────
+
+function getChipsAtivos(groupId) {
+  return [...document.querySelectorAll(`#${groupId} .chip.on`)]
+    .map(c => c.dataset.v);
+}
+
+function getDisciplinas() {
+  const chips = getChipsAtivos('chips-disciplina');
+  const lista = chips.filter(v => v !== 'Outros');
+  const outros = document.getElementById('outros-disciplina')?.value.trim();
+  if (chips.includes('Outros') && outros) lista.push(outros);
+  return lista;
+}
+
+function getTipos() {
+  const chips = getChipsAtivos('chips-tipo');
+  const lista = chips.filter(v => v !== 'Outros');
+  const outros = document.getElementById('outros-tipo')?.value.trim();
+  if (chips.includes('Outros') && outros) lista.push(outros);
+  return lista;
+}
+
+function v(id) { return (document.getElementById(id)?.value || '').trim(); }
+
+// ── GERAR PROMPT ──────────────────────────────────────────────
+
+function gerarPrompt() {
+  const contexto    = v('contexto');
+  const descricao   = v('descricao');
+  const disciplinas = getDisciplinas();
+  const tipos       = getTipos();
+
+  const preview = document.getElementById('preview');
+
+  if (!descricao) {
+    preview.innerHTML = '<span class="ph">Preencha a descrição da atividade para gerar o prompt...</span>';
+    return;
+  }
+
+  let p = '';
+
+  // PAPEL
+  p += `# PAPEL E CONTEXTO\n\n`;
+  p += `Você é engenheiro civil sênior com ampla experiência em orçamentação de obras civis e industriais no Brasil.\n`;
+  p += `Sua função é elaborar a composição de custos unitários para o serviço descrito abaixo,\n`;
+  p += `com base em consumos e produtividades médios praticados no mercado brasileiro.\n`;
+
+  p += `\n---\n\n`;
+
+  // ESCOPO
+  p += `## ESCOPO DO SERVIÇO\n\n`;
+  if (disciplinas.length)
+    p += `**Disciplina:** ${disciplinas.join(', ')}\n`;
+  if (tipos.length)
+    p += `**Tipo de serviço:** ${tipos.join(', ')}\n`;
+  if (contexto)
+    p += `**Contexto / ambiente:** ${contexto}\n`;
+  p += `\n**Descrição da atividade:**\n${descricao}\n`;
+
+  p += `\n---\n\n`;
+
+  // PREMISSAS
+  p += `## PREMISSAS PARA COMPOSIÇÃO\n\n`;
+  p += `- Utilizar consumos médios de mercado brasileiro (SINAPI, TCPO ou referência regional RS/Sul)\n`;
+  p += `- Considerar produtividade média de equipe (oficial + ajudante, quando aplicável)\n`;
+  p += `- Incluir todos os insumos necessários à execução completa do serviço\n`;
+  p += `- **Não considerar BDI** — custo direto apenas\n`;
+  p += `- Preços compatíveis com mercado atual (mão de obra e materiais praticados no Rio Grande do Sul)\n`;
+  p += `- Identificar a unidade de medição mais adequada (m², m³, m, un., kg, verba, etc.)\n`;
+  p += `- Separar claramente custo de material e custo de mão de obra\n`;
+
+  p += `\n---\n\n`;
+
+  // FORMATO DE SAÍDA
+  p += `## FORMATO DE SAÍDA\n\n`;
+  p += `Retornar obrigatoriamente em **tabela** com as seguintes colunas:\n\n`;
+  p += `| A — Item | B — Descrição da atividade | C — Unidade | D — Quantidade | E — Material unitário (R$) | F — Mão de obra unitária (R$) |\n`;
+  p += `|----------|---------------------------|-------------|----------------|---------------------------|-------------------------------|\n`;
+  p += `| ...      | ...                       | ...         | ...            | ...                       | ...                           |\n`;
+  p += `\n`;
+  p += `Após a tabela, incluir:\n`;
+  p += `- **Custo total de material (R$)**\n`;
+  p += `- **Custo total de mão de obra (R$)**\n`;
+  p += `- **Custo total do serviço (R$)**\n`;
+  p += `- **Custo unitário total (R$ / [unidade])** — valor por unidade de medição adotada\n`;
+  p += `\n`;
+  p += `Se o serviço envolver mais de uma unidade de medição, apresentar a composição separada por unidade.\n`;
+  p += `Indicar a fonte de referência utilizada (SINAPI, TCPO, mercado regional ou estimativa técnica).\n`;
+
+  p += `\n---\n\n`;
+
+  // OBSERVAÇÕES
+  p += `## OBSERVAÇÕES FINAIS\n\n`;
+  p += `- Caso alguma informação seja insuficiente para composição precisa, fazer a premissa adotada explícita\n`;
+  p += `- Se houver variação relevante de preço por condição de execução (ambiente industrial x predial, acesso restrito, turno noturno), sinalizá-la\n`;
+  p += `- Manter coerência técnica construtiva: preparo → execução → acabamento\n`;
+
+  renderPreview(p);
+}
+
+function renderPreview(text) {
+  const el = document.getElementById('preview');
+  const html = escHtml(text)
+    .replace(/^(# .+)$/gm, '<span style="color:#fff;font-weight:700;">$1</span>')
+    .replace(/^(## .+)$/gm, '<span style="color:#e2e8f0;font-weight:700;">$1</span>')
+    .replace(/^(---)/gm, '<span style="color:#333;">$1</span>')
+    .replace(/\*\*(.+?)\*\*/g, '<span style="color:#fff;font-weight:700;">$1</span>')
+    .replace(/(R\$)/g, '<span style="color:var(--accent);">$1</span>');
+  el.innerHTML = html;
+}
+
+// ── COPIAR ────────────────────────────────────────────────────
+
+function copiarPrompt() {
+  const el = document.getElementById('preview');
+  if (!el || el.querySelector('.ph')) {
+    showToast('Gere o prompt antes de copiar');
+    return;
+  }
+  const tmp = document.createElement('div');
+  tmp.innerHTML = el.innerHTML;
+  const txt = tmp.innerText;
+  navigator.clipboard.writeText(txt).then(() => showToast('Prompt copiado!'));
+}
+
+// ── LIMPAR ─────────────────────────────────────────────────────
+
+function limparTudo() {
+  if (!confirm('Limpar todos os campos?')) return;
+
+  ['contexto', 'descricao', 'outros-disciplina', 'outros-tipo'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
+  document.querySelectorAll('.outros-wrap').forEach(w => w.classList.remove('visible'));
+
+  document.getElementById('preview').innerHTML =
+    '<span class="ph">Preencha os campos ao lado para gerar o prompt de composição de custos...</span>';
+
+  showToast('Campos limpos');
+}
+
+// ── HELPERS ────────────────────────────────────────────────────
+
+function escHtml(s) {
+  return (s || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function gerarPrompt() {
+  const contexto = v('contexto');
+  const descricao = v('descricao');
+  const disciplinas = getDisciplinas();
+  const tipos = getTipos();
+
+  let p = '';
+
+  p += `# PAPEL E CONTEXTO\n\n`;
+  p += `Você é engenheiro civil sênior com ampla experiência em orçamentação de obras civis e industriais no Brasil.\n`;
+  p += `Sua função é elaborar a composição de custos unitários para o serviço descrito abaixo,\n`;
+  p += `com base em consumos e produtividades médios praticados no mercado brasileiro.\n`;
+
+  p += `\n---\n\n`;
+
+  p += `## ESCOPO DO SERVIÇO\n\n`;
+  p += `**Disciplina:** ${disciplinas.length ? disciplinas.join(', ') : '[selecionar disciplina(s)]'}\n`;
+  p += `**Tipo de serviço:** ${tipos.length ? tipos.join(', ') : '[selecionar tipo(s) de serviço]'}\n`;
+  p += `**Contexto / ambiente:** ${contexto || '[informar contexto / ambiente de execução]'}\n`;
+  p += `\n**Descrição da atividade:**\n${descricao || '[descrever a atividade que precisa ser composta]'}\n`;
+
+  p += `\n---\n\n`;
+
+  p += `## PREMISSAS PARA COMPOSIÇÃO\n\n`;
+  p += `- Utilizar consumos médios de mercado brasileiro (SINAPI, TCPO ou referência regional RS/Sul)\n`;
+  p += `- Considerar produtividade média de equipe (oficial + ajudante, quando aplicável)\n`;
+  p += `- Incluir todos os insumos necessários à execução completa do serviço\n`;
+  p += `- **Não considerar BDI** - custo direto apenas\n`;
+  p += `- Preços compatíveis com mercado atual (mão de obra e materiais praticados no Rio Grande do Sul)\n`;
+  p += `- Identificar a unidade de medição mais adequada (m², m³, m, un., kg, verba, etc.)\n`;
+  p += `- Separar claramente custo de material e custo de mão de obra\n`;
+
+  p += `\n---\n\n`;
+
+  p += `## FORMATO DE SAÍDA\n\n`;
+  p += `Retornar obrigatoriamente em **tabela** com as seguintes colunas:\n\n`;
+  p += `| A - Item | B - Descrição da atividade | C - Unidade | D - Quantidade | E - Material unitário (R$) | F - Mão de obra unitária (R$) |\n`;
+  p += `|----------|---------------------------|-------------|----------------|---------------------------|-------------------------------|\n`;
+  p += `| ...      | ...                       | ...         | ...            | ...                       | ...                           |\n`;
+  p += `\n`;
+  p += `Após a tabela, incluir:\n`;
+  p += `- **Custo total de material (R$)**\n`;
+  p += `- **Custo total de mão de obra (R$)**\n`;
+  p += `- **Custo total do serviço (R$)**\n`;
+  p += `- **Custo unitário total (R$ / [unidade])** - valor por unidade de medição adotada\n`;
+  p += `\n`;
+  p += `Se o serviço envolver mais de uma unidade de medição, apresentar a composição separada por unidade.\n`;
+  p += `Indicar a fonte de referência utilizada (SINAPI, TCPO, mercado regional ou estimativa técnica).\n`;
+
+  p += `\n---\n\n`;
+
+  p += `## OBSERVAÇÕES FINAIS\n\n`;
+  p += `- Caso alguma informação seja insuficiente para composição precisa, fazer a premissa adotada explícita\n`;
+  p += `- Se houver variação relevante de preço por condição de execução (ambiente industrial x predial, acesso restrito, turno noturno), sinalizá-la\n`;
+  p += `- Manter coerência técnica construtiva: preparo -> execução -> acabamento\n`;
+
+  renderPreview(p);
+}
+
+function renderPreview(text) {
+  const el = document.getElementById('preview');
+  const html = escHtml(text)
+    .replace(/^(# .+)$/gm, '<span style="color:#fff;font-weight:700;">$1</span>')
+    .replace(/^(## .+)$/gm, '<span style="color:#e2e8f0;font-weight:700;">$1</span>')
+    .replace(/^(---)/gm, '<span style="color:#333;">$1</span>')
+    .replace(/\*\*(.+?)\*\*/g, '<span style="color:#fff;font-weight:700;">$1</span>')
+    .replace(/(\[[^\]\n]+\])/g, '<span class="ph">$1</span>')
+    .replace(/(R\$)/g, '<span style="color:var(--accent);">$1</span>');
+  el.innerHTML = html;
+}
+
+function limparTudo() {
+  if (!confirm('Limpar todos os campos?')) return;
+
+  ['contexto', 'descricao', 'outros-disciplina', 'outros-tipo'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
+  document.querySelectorAll('.outros-wrap').forEach(w => w.classList.remove('visible'));
+
+  gerarPrompt();
+  showToast('Campos limpos');
+}
+
+gerarPrompt();
+</script>
+<script src="aac-modern-ui.js"></script>
+</body>
+</html>
