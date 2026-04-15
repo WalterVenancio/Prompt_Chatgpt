@@ -554,6 +554,7 @@ function gerarPrompt() {
   p += `- Respeitar exatamente a hierarquia e numeração fornecidas\n`;
   p += `- Para etapas e subetapas (agrupadores): manter o nome tal como fornecido\n`;
   p += `- Para itens de detalhe (último nível): retornar descrição técnica padronizada\n`;
+  p += `- Nao repetir o titulo do item na descricao; a redacao deve complementar o item com conteudo tecnico direto, sem redundancia\n`;
   p += `- Saída em lista simples, sem cabeçalhos adicionais, na mesma ordem e estrutura\n`;
 
   if (contexto) {
@@ -577,6 +578,7 @@ function gerarPrompt() {
   p += `\n---\n\n`;
   p += `## FORMATO DE SAÍDA\n\n`;
   p += `Retorne a mesma estrutura numerada, com as descrições dos itens de detalhe padronizadas.\n`;
+  p += `Nos itens de detalhe, nao reescreva o nome do item antes da descricao tecnica.\n`;
   p += `Não adicione itens, não remova itens, não altere a numeração.\n`;
 
   renderPreview(p);
