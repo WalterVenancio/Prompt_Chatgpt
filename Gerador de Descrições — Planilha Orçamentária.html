@@ -555,6 +555,8 @@ function gerarPrompt() {
   p += `- Para etapas e subetapas (agrupadores): manter o nome tal como fornecido\n`;
   p += `- Para itens de detalhe (último nível): retornar descrição técnica padronizada\n`;
   p += `- Nao repetir o titulo do item na descricao; a redacao deve complementar o item com conteudo tecnico direto, sem redundancia\n`;
+  p += `- Quando o item informar dimensoes, medidas, espessuras, alturas, larguras, comprimentos ou quantitativos tecnicos, manter essas informacoes escritas de forma explicita na descricao final\n`;
+  p += `- Manter explicitamente o elemento principal informado no item, como bancada, porta, divisoria, tubulacao, estrutura, cobertura ou similar; nao substituir por termos genericos como fornecimento sob medida ou conjunto sem dizer o que e\n`;
   p += `- Saída em lista simples, sem cabeçalhos adicionais, na mesma ordem e estrutura\n`;
 
   if (contexto) {
@@ -579,6 +581,8 @@ function gerarPrompt() {
   p += `## FORMATO DE SAÍDA\n\n`;
   p += `Retorne a mesma estrutura numerada, com as descrições dos itens de detalhe padronizadas.\n`;
   p += `Nos itens de detalhe, nao reescreva o nome do item antes da descricao tecnica.\n`;
+  p += `Se houver dimensoes no item original, elas devem aparecer de forma clara e escrita na descricao retornada.\n`;
+  p += `Exemplo: se o item citar bancada em aco inox com medidas, a resposta deve escrever bancada em aco inox com essas medidas de forma explicita.\n`;
   p += `Não adicione itens, não remova itens, não altere a numeração.\n`;
 
   renderPreview(p);
