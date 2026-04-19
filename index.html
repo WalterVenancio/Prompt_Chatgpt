@@ -319,7 +319,7 @@
 
     const setActive = (pageId) => {
       const page = pages.find((item) => item.id === pageId) || pages[0];
-      const encodedFile = encodeURI(page.file);
+      const encodedFile = `${encodeURI(page.file)}?v=20260419-venancio`;
 
       title.textContent = page.title;
       description.textContent = page.description;
