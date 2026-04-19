@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Proposta Técnica — AA Construções & Reformas</title>
+<title>Propostas Comerciais — Venancio Engenharia</title>
 <style>
   :root {
     --bg:           #f4f3f0;
@@ -223,12 +223,12 @@
 <header>
   <div class="brand">
     <div class="brand-logo" id="header-logo-wrap">
-      <img id="header-logo-img" alt="Logo AA">
-      <span class="initials" id="header-initials">AA</span>
+      <img id="header-logo-img" alt="Logo Venancio Engenharia">
+      <span class="initials" id="header-initials">VE</span>
     </div>
     <div class="brand-info">
-      <span>AA Construções &amp; Reformas LTDA — CNPJ 05.384.087/0001-61</span>
-      <strong>Gerador de Proposta Técnica</strong>
+      <span>Venancio Engenharia</span>
+      <strong>Propostas Comerciais</strong>
     </div>
   </div>
   <nav>
@@ -546,7 +546,7 @@ function buildPrompt() {
   /* PAPEL */
   blocos.push(`# PAPEL E CONTEXTO
 
-Você é engenheiro civil responsável pela elaboração de propostas técnicas e comerciais da empresa AA Construções & Reformas LTDA (CNPJ 05.384.087/0001-61).
+Você é engenheiro civil responsável pela elaboração de propostas comerciais da empresa Venancio Engenharia.
 
 O documento gerado será utilizado como proposta formal a ser apresentada ao cliente para análise e contratação dos serviços.`);
 
@@ -584,8 +584,7 @@ Gerar a proposta como arquivo .docx para download, seguindo o padrão visual aba
 ### Cabeçalho do documento (todas as páginas, exceto folha de rosto)
 - Sem tabela. Bloco alinhado à esquerda no topo de cada página a partir da página 2:
 ${logoFileName ? `  - Logo da empresa: inserir imagem "${logoFileName}" alinhada à esquerda, altura máxima 1,5cm, sem quebra de linha — logo posicionado à esquerda` : '  - Sem logo: omitir espaço de imagem'}
-  - Abaixo do logo (ou no topo se sem logo): "AA Construções & Reformas LTDA" — negrito, 12pt, alinhado à esquerda
-  - Linha seguinte: "CNPJ 05.384.087/0001-61" — 10pt, alinhado à esquerda
+  - Abaixo do logo (ou no topo se sem logo): "Venancio Engenharia" — negrito, 12pt, alinhado à esquerda
   - Linha separadora horizontal fina abaixo do bloco de cabeçalho
   - Espaçamento abaixo do cabeçalho: 18pt
 
