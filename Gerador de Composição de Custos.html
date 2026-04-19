@@ -502,14 +502,47 @@ function renderPreview(text) {
 
 function copiarPrompt() {
   const el = document.getElementById('preview');
-  if (!el || el.querySelector('.ph')) {
+  const txt = (el?.innerText || '').trim();
+  if (!el || !txt || txt.includes('Preencha os campos ao lado') || txt.includes('Preencha a descrição da atividade')) {
     showToast('Gere o prompt antes de copiar');
     return;
   }
   const tmp = document.createElement('div');
   tmp.innerHTML = el.innerHTML;
-  const txt = tmp.innerText;
-  navigator.clipboard.writeText(txt).then(() => showToast('Prompt copiado!'));
+  copiarTexto(tmp.innerText);
+}
+
+function copiarTexto(txt) {
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard
+      .writeText(txt)
+      .then(() => showToast('Prompt copiado!'))
+      .catch(() => copiarTextoFallback(txt));
+    return;
+  }
+
+  copiarTextoFallback(txt);
+}
+
+function copiarTextoFallback(txt) {
+  const ta = document.createElement('textarea');
+  ta.value = txt;
+  ta.setAttribute('readonly', '');
+  ta.style.position = 'fixed';
+  ta.style.left = '-9999px';
+  ta.style.top = '0';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+
+  try {
+    const ok = document.execCommand('copy');
+    showToast(ok ? 'Prompt copiado!' : 'Não foi possível copiar automaticamente');
+  } catch (err) {
+    showToast('Não foi possível copiar automaticamente');
+  }
+
+  document.body.removeChild(ta);
 }
 
 // ── LIMPAR ─────────────────────────────────────────────────────
