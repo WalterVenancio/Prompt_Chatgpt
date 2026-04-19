@@ -554,7 +554,8 @@ function gerarPrompt() {
   p += `- Respeitar exatamente a hierarquia e numeração fornecidas\n`;
   p += `- Para etapas e subetapas (agrupadores): manter o nome tal como fornecido\n`;
   p += `- Para itens de detalhe (último nível): retornar descrição técnica padronizada\n`;
-  p += `- Nao repetir o titulo do item na descricao; a redacao deve complementar o item com conteudo tecnico direto, sem redundancia\n`;
+  p += `- Nao repetir o titulo, texto original ou enunciado do item na resposta; retornar somente a descricao tecnica final\n`;
+  p += `- Para itens informados sem numeracao, tratar cada linha como um item independente e devolver apenas uma descricao por linha, sem repetir a linha original antes da descricao\n`;
   p += `- Quando o item informar dimensoes, medidas, espessuras, alturas, larguras, comprimentos ou quantitativos tecnicos, manter essas informacoes escritas de forma explicita na descricao final\n`;
   p += `- Manter explicitamente o elemento principal informado no item, como bancada, porta, divisoria, tubulacao, estrutura, cobertura ou similar; nao substituir por termos genericos como fornecimento sob medida ou conjunto sem dizer o que e\n`;
   p += `- Saída em lista simples, sem cabeçalhos adicionais, na mesma ordem e estrutura\n`;
@@ -573,14 +574,16 @@ function gerarPrompt() {
       const isLeaf = !items.some(other => other.code && other.code.startsWith(n.code + '.'));
       p += `${indent}${n.text}${isLeaf ? ' → [adequar descrição técnica]' : ''}\n`;
     } else {
-      p += `${n.text}\n`;
+      p += `${n.text} → [adequar descrição técnica]\n`;
     }
   });
 
   p += `\n---\n\n`;
   p += `## FORMATO DE SAÍDA\n\n`;
-  p += `Retorne a mesma estrutura numerada, com as descrições dos itens de detalhe padronizadas.\n`;
-  p += `Nos itens de detalhe, nao reescreva o nome do item antes da descricao tecnica.\n`;
+  p += `Retorne somente as descricoes finais padronizadas.\n`;
+  p += `Se a entrada estiver numerada, mantenha apenas a numeracao e substitua o texto original pela descricao tecnica.\n`;
+  p += `Se a entrada nao estiver numerada, retorne uma descricao por linha, na mesma ordem, sem titulo, rotulo, marcador extra ou repeticao do texto original.\n`;
+  p += `Nunca escreva o item original em uma linha separada antes da descricao.\n`;
   p += `Se houver dimensoes no item original, elas devem aparecer de forma clara e escrita na descricao retornada.\n`;
   p += `Exemplo: se o item citar bancada em aco inox com medidas, a resposta deve escrever bancada em aco inox com essas medidas de forma explicita.\n`;
   p += `Não adicione itens, não remova itens, não altere a numeração.\n`;
